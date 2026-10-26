@@ -1,0 +1,2104 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architektura počítačů a základy OS — interaktivní opakování</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1a56db;--blue-h:#1d4ed8;--blue-50:#eff6ff;--blue-100:#dbeafe;--blue-200:#bfdbfe;--blue-dark:#1e40af;--blue-text:#042c53;
+  --bg:#f0f4ff;--white:#fff;--text:#111827;--sec:#6b7280;--hint:#9ca3af;
+  --border:#dbeafe;--border2:#bfdbfe;
+  --green-bg:#f0fdf4;--green-b:#bbf7d0;--green-t:#14532d;--green-m:#16a34a;
+  --amber-bg:#fffbeb;--amber-b:#fde68a;--amber-t:#78350f;--amber-m:#d97706;
+  --red-bg:#fef2f2;--red-b:#fecaca;--red-t:#991b1b;--red-m:#dc2626;
+  --purple-bg:#faf5ff;--purple-t:#5b21b6;
+  --r:8px;--rl:12px;--rxl:14px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;padding:1.5rem 1rem}
+.page{max-width:740px;margin:0 auto}
+
+/* HEADER */
+.hdr{background:var(--blue);border-radius:var(--rxl);padding:1.25rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:14px}
+.hdr-icon{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hdr h1{font-size:16px;font-weight:600;color:#fff;margin-bottom:2px}
+.hdr p{font-size:12px;color:rgba(255,255,255,.7)}
+.hdr-btn{background:rgba(255,255,255,.12);border:none;border-radius:8px;padding:7px 10px;cursor:pointer;color:#fff;font-size:11px;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:background .15s}
+.hdr-btn:hover{background:rgba(255,255,255,.22)}
+
+/* PROGRESS */
+.prog{background:var(--white);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:1rem;border:1px solid var(--border)}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.prog-lbl{font-size:11px;font-weight:600;color:var(--sec);text-transform:uppercase;letter-spacing:.06em}
+.prog-pct{font-size:12px;font-weight:600;color:var(--blue)}
+.prog-track{height:6px;background:var(--blue-100);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),#3b82f6);border-radius:3px;transition:width .5s ease}
+.snav{display:flex;gap:5px;flex-wrap:wrap}
+.sb{padding:4px 10px;font-size:11px;font-weight:500;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--sec);cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.sb:hover:not([disabled]){background:var(--blue-50);color:var(--blue-dark)}
+.sb.done{background:var(--blue-50);color:var(--blue-dark);border-color:var(--blue-200)}
+.sb.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sb[disabled]{opacity:.35;cursor:default}
+
+/* LESSON CARD */
+.lcard{background:var(--white);border-radius:var(--rxl);overflow:hidden;border:1px solid var(--border);margin-bottom:1rem;box-shadow:0 1px 3px rgba(26,86,219,.06)}
+.lhead{padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--blue-50)}
+.lbadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:.625rem}
+.lbadge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.b-data{background:var(--blue-50);color:var(--blue-dark)}
+.b-arch{background:var(--green-bg);color:#166534}
+.b-hw{background:var(--purple-bg);color:var(--purple-t)}
+.b-bus{background:var(--amber-bg);color:#92400e}
+.b-mem{background:var(--blue-50);color:var(--blue-dark)}
+.b-per{background:var(--green-bg);color:#166534}
+.b-mob{background:var(--purple-bg);color:var(--purple-t)}
+.b-os{background:var(--amber-bg);color:#92400e}
+.b-wl{background:var(--blue-50);color:var(--blue-dark)}
+.b-sec{background:var(--red-bg);color:#9f1239}
+.b-quiz{background:#fdf4ff;color:#6b21a8}
+.ltitle{font-size:19px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.3}
+.lsub{font-size:13px;color:var(--sec)}
+.lmeta{display:flex;gap:12px;flex-wrap:wrap;margin-top:.625rem;font-size:11px;color:var(--hint)}
+.lbody{padding:1.25rem 1.5rem}
+
+/* CONTENT */
+.sechead{display:flex;align-items:baseline;gap:8px;margin:1.5rem 0 .625rem;padding-top:1rem;border-top:1px solid var(--blue-50)}
+.sechead:first-child{margin-top:0;padding-top:0;border-top:none}
+.sechead .n{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.06em;background:var(--blue-50);padding:2px 7px;border-radius:5px;flex-shrink:0}
+.sechead h3{font-size:15px;font-weight:700;color:var(--text);line-height:1.3}
+.txt{font-size:14px;line-height:1.75;margin-bottom:1rem;color:var(--text)}
+.txt p{margin-bottom:.75rem}.txt p:last-child{margin:0}
+.txt strong{font-weight:600;color:var(--blue-dark)}
+.txt code{font-family:ui-monospace,'Cascadia Code',Consolas,monospace;font-size:.9em;background:var(--blue-50);padding:1px 5px;border-radius:4px;color:var(--blue-dark)}
+.txt sup{font-size:.7em}
+
+.hl{border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;font-size:13px;line-height:1.6;display:flex;gap:10px;align-items:flex-start}
+.hl-icon{width:18px;height:18px;flex-shrink:0;margin-top:1px}
+.hl strong{font-weight:600}
+.hl code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;background:rgba(255,255,255,.6);padding:1px 4px;border-radius:3px}
+.hl-blue{background:var(--blue-50);color:var(--blue-text);border:1px solid var(--blue-200)}
+.hl-green{background:var(--green-bg);color:var(--green-t);border:1px solid var(--green-b)}
+.hl-amber{background:var(--amber-bg);color:var(--amber-t);border:1px solid var(--amber-b)}
+.hl-red{background:var(--red-bg);color:var(--red-t);border:1px solid var(--red-b)}
+
+.info-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:1rem;border-radius:var(--r);overflow:hidden}
+.info-table th{background:var(--blue-50);padding:8px 12px;text-align:left;font-weight:600;font-size:11px;color:var(--blue-dark);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+.info-table td{padding:8px 12px;border-bottom:1px solid var(--blue-50);color:var(--text);line-height:1.55;vertical-align:top}
+.info-table td:first-child{font-weight:600;white-space:nowrap}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:nth-child(even) td{background:var(--blue-50)}
+@media(max-width:560px){
+  .info-table td:first-child{white-space:normal}
+  .info-table td,.info-table th{padding:7px 9px;font-size:12px}
+}
+
+.def-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:1rem}
+.def-card{background:var(--blue-50);border:1px solid var(--border);border-radius:var(--r);padding:.75rem}
+.def-term{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.def-val{font-size:13px;line-height:1.5;color:var(--text)}
+
+.slabel{font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+
+/* SIM / WIDGET BLOCK */
+.sim{background:var(--blue-50);border:1px solid var(--border);border-radius:var(--rl);padding:1rem;margin-bottom:1rem}
+.sim-t{font-size:13px;font-weight:700;color:var(--blue-dark);margin-bottom:2px}
+.sim-h{font-size:12px;color:var(--sec);margin-bottom:.75rem;line-height:1.5}
+.status-bar{font-size:13px;color:var(--sec);padding:.5rem .875rem;background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:.75rem;min-height:36px;line-height:1.5}
+.status-bar strong{color:var(--blue-dark)}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.75rem}
+.brow:last-child{margin-bottom:0}
+.btn{padding:8px 16px;font-size:13px;font-weight:500;border-radius:var(--r);cursor:pointer;transition:all .15s;font-family:inherit}
+.btn-p{background:var(--blue);color:#fff;border:none}.btn-p:hover{background:var(--blue-h)}.btn-p:disabled{opacity:.4;cursor:default}
+.btn-d{background:#fff;color:var(--red-m);border:1px solid var(--red-b)}.btn-d:hover{background:var(--red-bg)}
+.btn-ok{background:#fff;color:var(--green-m);border:1px solid var(--green-b)}.btn-ok:hover{background:var(--green-bg)}
+.btn-g{background:#fff;color:var(--text);border:1px solid var(--border2)}.btn-g:hover{background:var(--blue-50)}.btn-g:disabled{opacity:.35;cursor:default}
+.btn-s{padding:6px 12px;font-size:12px}
+
+.fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld label{font-size:10px;font-weight:600;color:var(--sec);text-transform:uppercase;letter-spacing:.05em}
+.fld input,.fld select{font-family:ui-monospace,Consolas,monospace;font-size:13px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:#fff;color:var(--text);width:140px}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.12)}
+@media(max-width:560px){.fld input,.fld select{width:118px}}
+
+.rd{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin-bottom:.75rem}
+.rd-c{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;text-align:center}
+.rd-k{font-size:9.5px;font-weight:700;color:var(--sec);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.rd-v{font-family:ui-monospace,Consolas,monospace;font-size:17px;font-weight:700;color:var(--blue);word-break:break-all;line-height:1.25}
+.rd-v.sm{font-size:13px}
+
+.log-box{font-size:11.5px;font-family:ui-monospace,Consolas,monospace;max-height:150px;overflow-y:auto;padding:6px 10px;background:#fff;border:1px solid var(--border);border-radius:var(--r);margin-bottom:.75rem}
+.lg{padding:2.5px 0;border-bottom:1px solid var(--blue-50);display:flex;justify-content:space-between;gap:10px}
+.lg:last-child{border:none}
+.lg.ok{color:var(--green-m)}.lg.err{color:var(--red-m)}.lg.info{color:var(--blue)}.lg.warn{color:var(--amber-m)}
+.lg em{font-style:normal;font-weight:700;color:var(--green-m)}
+.res{padding:9px 12px;background:var(--green-bg);border:1px solid var(--green-b);border-radius:var(--r);font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;color:var(--green-t);text-align:center;word-break:break-all;margin-bottom:.75rem}
+.empty{color:var(--hint);font-size:12px;font-style:italic;padding:6px 2px}
+
+/* CANVAS */
+.cvs-wrap{border-radius:var(--rl);overflow:hidden;border:1px solid var(--border);background:#fff;margin-bottom:.75rem}
+.cvs-wrap canvas{width:100%;display:block}
+.cvs-hint{font-size:11px;color:var(--hint);text-align:center;padding:5px 8px 7px;line-height:1.4}
+
+/* PILLS / TOGGLES */
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem}
+.pill{padding:5px 14px;font-size:12px;font-weight:500;border-radius:20px;border:1px solid var(--border2);background:#fff;cursor:pointer;font-family:inherit;color:var(--sec);transition:all .15s}
+.pill.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pill:hover:not(.on){background:var(--blue-50);color:var(--blue-dark)}
+
+/* STEP PILLS + EXPL */
+.spills{display:flex;gap:4px;margin-bottom:.75rem}
+.sp{flex:1;height:4px;border-radius:2px;background:var(--blue-100);transition:background .3s}
+.sp.done{background:var(--blue-200)}.sp.on{background:var(--blue)}
+.expl-card{border:1px solid var(--border);border-radius:var(--rl);padding:.875rem 1rem;margin-bottom:.75rem;background:#fff;min-height:96px}
+.expl-num{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.expl-title{font-size:14px;font-weight:700;margin-bottom:5px;color:var(--text)}
+.expl-desc{font-size:13px;line-height:1.6;color:var(--sec)}
+
+/* BITS */
+.bits{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:.75rem}
+.bit{width:48px;background:#fff;border:2px solid var(--border2);border-radius:var(--r);padding:6px 0 5px;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
+.bit:hover{border-color:var(--blue)}
+.bit .d{display:block;font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:22px;line-height:1;color:var(--hint)}
+.bit .p{display:block;font-family:ui-monospace,Consolas,monospace;font-size:9px;color:var(--sec);margin-top:4px}
+.bit.on{border-color:var(--blue);background:var(--blue-50)}
+.bit.on .d{color:var(--blue)}
+.bit.on .p{color:var(--blue-dark);font-weight:700}
+@media(max-width:560px){.bit{width:38px}.bit .d{font-size:18px}.bit .p{font-size:8px}}
+
+.brow-c{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.bc{width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:16px;border:1px solid var(--border2);border-radius:6px;background:#fff;color:var(--blue-dark)}
+.bc.flip{background:var(--amber-bg);border-color:var(--amber-b);color:var(--amber-t)}
+.bc.sign{background:var(--blue);border-color:var(--blue);color:#fff}
+.stage{margin-bottom:.625rem}
+.stage-l{font-size:11px;font-weight:600;color:var(--sec);margin-bottom:4px;text-align:center}
+
+/* PYRAMID */
+.pyr{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:.75rem}
+.pyr-l{border:1px solid var(--border2);background:#fff;border-radius:6px;padding:7px 12px;text-align:center;cursor:pointer;transition:all .15s;font-family:inherit;font-weight:600;font-size:12.5px;color:var(--text)}
+.pyr-l:hover{border-color:var(--blue)}
+.pyr-l.on{border-color:var(--blue);background:var(--blue);color:#fff}
+.pyr-ax{display:flex;justify-content:space-between;font-size:10px;color:var(--hint);max-width:400px;margin:0 auto 8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+
+/* BARS */
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar-r{display:grid;grid-template-columns:104px 1fr;gap:9px;align-items:center;font-size:12px}
+.bar-r .nm{font-family:ui-monospace,Consolas,monospace;color:var(--sec);text-align:right;font-size:11px}
+.bar-t{background:var(--blue-100);border-radius:4px;height:22px;overflow:hidden}
+.bar-f{height:100%;background:linear-gradient(90deg,#3b82f6,var(--blue));border-radius:4px;width:0;transition:width .8s cubic-bezier(.3,0,.2,1);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:11px;white-space:nowrap}
+.bar-r.hi .bar-f{background:linear-gradient(90deg,#4ade80,var(--green-m))}
+@media(max-width:560px){.bar-r{grid-template-columns:76px 1fr}.bar-r .nm{font-size:10px}}
+
+/* TASKS */
+.task{border:1px solid var(--border);border-radius:var(--rl);padding:.875rem 1rem;margin-bottom:.625rem;background:#fff}
+.task-q{font-size:13.5px;line-height:1.65;margin-bottom:.625rem;color:var(--text)}
+.task-q b{color:var(--blue-dark)}
+.task-sol{margin-top:.75rem;padding:.75rem .875rem;background:var(--green-bg);border:1px solid var(--green-b);border-radius:var(--r);font-size:13px;line-height:1.65;color:var(--green-t)}
+.task-sol p{margin-bottom:.5rem}.task-sol p:last-child{margin-bottom:0}
+.task-sol b{font-weight:700}
+
+/* RECAP */
+.recap-list{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:1rem}
+.recap-list li{display:flex;gap:9px;font-size:13px;line-height:1.6;align-items:flex-start;background:var(--blue-50);border:1px solid var(--border);border-radius:var(--r);padding:.625rem .875rem}
+.recap-list li::before{content:'✓';color:var(--blue);font-weight:700;flex-shrink:0}
+.recap-list b{font-weight:600;color:var(--blue-dark)}
+
+/* QUIZ */
+.q-prog-wrap{height:4px;background:var(--blue-100);border-radius:2px;margin-bottom:1.25rem;overflow:hidden}
+.q-prog{height:100%;background:var(--blue);border-radius:2px;transition:width .3s}
+.q-meta{font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;justify-content:space-between}
+.q-meta .ch{color:var(--hint);font-weight:500;text-transform:none;letter-spacing:0}
+.q-text{font-size:15px;font-weight:600;line-height:1.5;margin-bottom:1rem;color:var(--text)}
+.q-opts{display:flex;flex-direction:column;gap:7px;margin-bottom:.875rem}
+.q-opt{padding:10px 14px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:13px;font-family:inherit;background:#fff;color:var(--text);text-align:left;transition:all .1s;line-height:1.4}
+.q-opt:hover:not([disabled]){background:var(--blue-50);border-color:var(--blue-200)}
+.q-opt.correct{background:var(--green-bg);border-color:var(--green-m);color:var(--green-t)}
+.q-opt.wrong{background:var(--red-bg);border-color:var(--red-m);color:var(--red-t)}
+.q-opt[disabled]{cursor:default}
+.q-exp{font-size:13px;color:var(--blue-dark);line-height:1.6;padding:10px 14px;background:var(--blue-50);border-radius:var(--r);margin-bottom:.875rem;border-left:3px solid var(--blue)}
+.q-txt-in{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.875rem}
+.q-txt-in input{font-family:ui-monospace,Consolas,monospace;font-size:14px;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--r);width:180px}
+.q-txt-in input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.12)}
+.qdot{width:10px;height:10px;border-radius:50%;background:var(--blue-100);display:inline-block}
+.qdot.ok{background:var(--green-m)}.qdot.bad{background:var(--red-m)}
+
+/* LESSON NAV */
+.lnav{display:flex;justify-content:space-between;align-items:center;padding:.875rem 1.5rem;border-top:1px solid var(--blue-50);background:var(--blue-50);gap:10px}
+.lnav-pos{font-size:12px;color:var(--hint);white-space:nowrap}
+
+/* COMPLETE */
+.complete{text-align:center;padding:2rem 1rem}
+.complete-star{font-size:52px;margin-bottom:.75rem;line-height:1;color:var(--blue)}
+.complete-title{font-size:22px;font-weight:700;margin-bottom:.5rem}
+.complete-score{font-size:40px;font-weight:700;color:var(--blue);margin-bottom:.5rem}
+.complete-sub{font-size:14px;color:var(--sec);max-width:420px;margin:0 auto 1.5rem;line-height:1.65}
+
+@media print{
+  body{background:#fff;padding:0}
+  .hdr,.prog,.lnav,.brow,.fields,.pills,.btn,.hdr-btn{display:none!important}
+  .lcard{border:none;box-shadow:none;margin:0}
+  .task-sol{display:block!important}
+  .sim{background:#fff;break-inside:avoid}
+  .info-table,.task,.hl{break-inside:avoid}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.001ms!important;animation-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div id="toast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.18);transition:opacity .3s"></div>
+
+<div class="hdr">
+  <div class="hdr-icon">
+    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="22"/><line x1="15" y1="20" x2="15" y2="22"/><line x1="20" y1="9" x2="22" y2="9"/><line x1="20" y1="14" x2="22" y2="14"/><line x1="2" y1="9" x2="4" y2="9"/><line x1="2" y1="14" x2="4" y2="14"/></svg>
+  </div>
+  <div style="flex:1">
+    <h1>Architektura počítačů a základy OS</h1>
+    <p>Interaktivní opakování ke kurzu — 10 kapitol, asi 1,5 hodiny</p>
+  </div>
+  <button class="hdr-btn" onclick="confirmReset()" title="Resetovat postup">↺ Reset</button>
+</div>
+
+<div class="prog">
+  <div class="prog-top"><span class="prog-lbl">Postup opakováním</span><span class="prog-pct" id="progPct">0 %</span></div>
+  <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <div class="snav" id="stepsNav"></div>
+</div>
+
+<div class="lcard" id="lessonCard"></div>
+
+</div>
+<script>
+
+const CHAPTERS=[
+{
+ id:1, mins:15, title:'Reprezentace dat', sub:'Binární soustava, kódy a jednotky informace',
+ blurb:'Proč počítač počítá jen s nulami a jedničkami a co je vlastně bajt.',
+ sections:[
+  {t:'Data a informace', html:`
+   <p><strong>Data</strong> jsou holé údaje. <strong>Informace</strong> vznikne, až když jim někdo dá význam.</p>
+   <p>Počítač ukládá všechno stejně — jako nuly a jedničky. Jestli jde o text, obrázek, nebo hudbu, rozhoduje až program, který soubor otevře.</p>`,
+   key:'Pro počítač je text, obrázek i zvuk jen řada nul a jedniček.'},
+
+  {t:'Bit a bajt', html:`
+   <p><strong>Bit</strong> je jedna nula nebo jednička (malé b). <strong>Bajt</strong> je osm bitů (velké B).</p>
+   <p>Každý bit v bajtu má svou váhu: zprava 1, 2, 4, 8, 16, 32, 64, 128. Hodnotu bajtu dostanete, když sečtete váhy zapnutých bitů.</p>`,
+   lab:'bits', labTitle:'Bajt pod rukama', labHint:'Klikáním přepínejte jednotlivé bity.',
+   facts:{title:'Kolik hodnot se vejde', rows:[
+     ['1 bit','2 hodnoty'],
+     ['8 bitů (bajt)','256 hodnot, tedy 0 až 255'],
+     ['16 bitů','65 536 hodnot'],
+     ['Pravidlo','n bitů = 2<sup>n</sup> hodnot']]},
+   key:'Osm bitů dá 2<sup>8</sup> = 256 možností, tedy čísla 0 až 255.'},
+
+  {t:'Číselné soustavy', html:`
+   <p><strong>Desítková</strong> soustava je pro lidi, <strong>dvojková</strong> pro počítač. <strong>Šestnáctková</strong> (0–9 a A–F) slouží ke kratšímu zápisu, třeba u barev <code>#FF1245</code>.</p>
+   <p>Jedna šestnáctková číslice nahradí čtyři bity. Celý bajt tak zapíšete dvěma znaky.</p>`,
+   lab:'convert', labTitle:'Převod do dvojkové soustavy', labHint:'Dělíme dvěma, zapisujeme zbytky, čteme odspodu.',
+   facts:{title:'Jak převádět', rows:[
+     ['Z desítkové do dvojkové','dělíte dvěma, zbytky čtete odspodu nahoru'],
+     ['Z dvojkové do desítkové','sečtete váhy u jedniček'],
+     ['Příklad','1101₂ = 8 + 4 + 0 + 1 = 13']]},
+   key:'Dělit dvěma tam, sčítat váhy zpátky.'},
+
+  {t:'Jednotky a předpony', html:`
+   <p>Existují dvě řady jednotek. <strong>KB, MB, GB</strong> násobí tisícem — používají je výrobci disků. <strong>KiB, MiB, GiB</strong> násobí číslem 1024 — počítá s nimi operační systém.</p>
+   <p>Proto systém ukáže u nového disku méně, než je napsáno na krabici. Nic nechybí, jen se to počítá jinak.</p>`,
+   lab:'capacity', labTitle:'Proč disk ukáže míň, než má na obalu',
+   key:'1 KB = 1000 B, ale 1 KiB = 1024 B. U terabajtů je rozdíl skoro 10 %.', keyWarn:true},
+
+  {t:'Kódování znaků', html:`
+   <p>Každý znak má v počítači své číslo. Tabulka <strong>ASCII</strong> má jen 128 znaků a žádnou diakritiku.</p>
+   <p>Dnes se používá <strong>Unicode</strong> uložený jako <strong>UTF-8</strong>. Pojme písmena všech jazyků i emoji.</p>`,
+   key:'Když se v textu rozsype diakritika, byl uložen v jiném kódování, než ve kterém ho čtete.'},
+
+  {t:'Záporná čísla', html:`
+   <p>Záporná čísla se ukládají v <strong>doplňkovém kódu</strong>. Postup: obrátíte všechny bity a přičtete jedničku.</p>
+   <p>Tenhle způsob vyhrál, protože má jen jednu nulu a procesor jím umí odčítat stejně jako sčítat.</p>`,
+   lab:'twos', labTitle:'Doplňkový kód po krocích',
+   key:'Jednička v nejlevějším bitu znamená záporné číslo. Na osmi bitech jde rozsah od −128 do 127.'},
+
+  {t:'Když se číslo nevejde', html:`
+   <p>Když výsledek přesáhne místo, které na něj je, nastane <strong>přetečení</strong>. Číslo se „překlopí“ — z 255 je najednou 0.</p>
+   <p>Procesor přitom žádnou chybu nehlásí. Program prostě počítá dál se špatným číslem. Kvůli přetečení se v roce 1996 zřítila raketa Ariane 5.</p>`,
+   lab:'overflow', labTitle:'Přetečení na vlastní oči', labHint:'Přičítejte a sledujte, kdy se registr překlopí.',
+   key:'Přetečení je tichá chyba — nic nespadne, jen vyjde špatné číslo.', keyWarn:true},
+
+  {t:'Přenos dat', html:`
+   <p>Rychlost připojení se udává v <strong>bitech</strong> za sekundu (Mb/s), velikost souboru v <strong>bajtech</strong> (MB). Mezi nimi je osminásobek.</p>`,
+   lab:'download', labTitle:'Jak dlouho potrvá stahování',
+   key:'Linka 100 Mb/s stáhne za sekundu 12,5 MB, ne 100 MB.', keyWarn:true}
+ ],
+ tasks:[
+  {q:"Student vám ukáže nový disk s nápisem <b>2 TB</b> a stěžuje si, že Windows hlásí jen 1,81 TB. Tvrdí, že ho výrobce ošidil. Kde je chyba v jeho úvaze a jak byste mu to vysvětlili?",
+   s:"<p><b>Nikdo neošidil nikoho.</b> Výrobce počítá v desítkových jednotkách, systém ve dvojkových.</p><p>2 TB podle výrobce znamená 2 × 10¹² = 2 000 000 000 000 bajtů. Windows ale dělí číslem 1024⁴ = 1 099 511 627 776, a tak dostane 1,82 — přičemž jednotku popisuje jako „TB“, ačkoli počítá TiB.</p><p><b>Skutečná chyba je v označení Windows</b>, ne v disku. Kdyby systém psal 1,81 TiB, žádný spor by nevznikl. Zkuste si to spočítat v kalkulačce v sekci o jednotkách — u terabajtů dělá rozdíl skoro 10 %.</p>"},
+  {q:"Máte spočítat, jak dlouho potrvá stažení filmu o velikosti <b>4,7 GB</b> po lince <b>250 Mb/s</b>. Kolega tvrdí, že to bude asi 19 sekund, protože 4,7 ÷ 0,25 ≈ 19. Najděte chybu a spočítejte to správně.",
+   s:"<p><b>Zaměnil bity za bajty.</b> Velikost souboru je v gigabajtech, rychlost linky v megabitech — mezi nimi je osminásobek.</p><p>Správný postup: 4,7 GB × 8 000 = 37 600 Mb. Poté 37 600 ÷ 250 = <b>150 sekund</b>, tedy dvě a půl minuty.</p><p>Kolegův výsledek je osmkrát menší než skutečnost. Je to nejčastější chyba v celé kapitole a stojí za ní právě to, že se rychlost tradičně udává v bitech, kdežto velikost v bajtech.</p>"},
+  {q:"Program ukládá počet návštěvníků do <b>osmibitové proměnné bez znaménka</b>. Po 300 návštěvnících ukazuje hodnotu 44. Vysvětlete, proč, a navrhněte dvě různá řešení.",
+   s:"<p><b>Došlo k přetečení.</b> Do osmi bitů se vejde 0 až 255. Při 256. návštěvníkovi se čítač překlopil na nulu a počítal znovu: 300 − 256 = <b>44</b>.</p><p><b>Řešení 1 — širší proměnná.</b> Šestnáct bitů pojme 65 535 návštěvníků, dvaatřicet přes čtyři miliardy. Nejjednodušší a nejběžnější náprava.</p><p><b>Řešení 2 — kontrola před přičtením.</b> Program před každým zvýšením ověří, jestli by se výsledek ještě vešel, a při dosažení stropu ohlásí chybu místo tichého překlopení. To je bezpečnější, protože se chyba pozná hned.</p><p>Právě druhá varianta chyběla u rakety Ariane 5 — proměnná přetekla a řízení dostalo nesmyslnou hodnotu jako by nic.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Kolik bitů má jeden bajt a kolik hodnot v něm zapíšete?',
+   o:['4 bity, 16 hodnot','8 bitů, 256 hodnot','8 bitů, 128 hodnot','16 bitů, 65 536 hodnot'],c:1,
+   e:'Osm bitů dá 2⁸ = 256 kombinací, tedy hodnoty 0 až 255.'},
+  {t:'text',q:'Kolik bajtů má 1 KiB?',a:['1024'],
+   e:'1024. Dvojkové předpony (KiB, MiB, GiB) násobí 1024, desítkové (KB, MB, GB) tisícem.'},
+  {t:'choice',q:'Jak se v doplňkovém kódu zapíše záporné číslo?',
+   o:['Prvnímu bitu se nastaví jednička','Znegují se všechny bity','Znegují se všechny bity a přičte se jedna','Číslo se zapíše pozpátku'],c:2,
+   e:'Negace plus jedna. Přičtení jedničky odstraní druhou nulu a umožní jednotné sčítání i odčítání.'}
+ ],
+ recap:[
+  '<b>Bit je jedna číslice, bajt je osm bitů.</b> Malé b a velké B nejsou totéž — rozdíl je osminásobný.',
+  '<b>n bitů pojme 2ⁿ hodnot.</b> Osm bitů tedy 256, šestnáct 65 536.',
+  '<b>Šestnáctková soustava</b> zkracuje zápis: jedna číslice zastoupí čtyři bity.',
+  '<b>KB = 1000 B, KiB = 1024 B.</b> Odtud rozdíl mezi obalem disku a údajem v systému.',
+  '<b>ASCII</b> zvládá 128 znaků bez diakritiky, <b>UTF-8</b> pokryje všechna písma světa.',
+  '<b>Doplňkový kód</b> = negace bitů a přičtení jedničky. Rozsah −128 až 127, jediná nula.',
+  '<b>Přetečení</b> nastane, když se výsledek nevejde do registru — hodnota se tiše překlopí.',
+  '<b>Rychlost v bitech, velikost v bajtech.</b> Linka 100 Mb/s dá 12,5 MB za sekundu.'
+ ]
+},
+
+{
+ id:2, mins:10, title:'Architektura počítače', sub:'Von Neumann, Harvard a instrukční cyklus',
+ blurb:'Jak je počítač uspořádaný uvnitř a proč se to za sedmdesát let skoro nezměnilo.',
+ sections:[
+  {t:'Von Neumannovo schéma', html:`
+   <p>Většina počítačů je postavená podle návrhu z roku 1945. Má pět částí: <strong>řadič</strong>, <strong>ALU</strong> (počítá), <strong>paměť</strong>, <strong>vstup</strong> a <strong>výstup</strong>.</p>
+   <p>Řadič a ALU dohromady tvoří <strong>procesor</strong>.</p>`,
+   key:'Hlavní myšlenka: program i data leží ve stejné paměti. Počítač se proto přeprogramuje, ne přestaví.'},
+
+  {t:'Von Neumann versus Harvard', html:`
+   <p>U <strong>von Neumanna</strong> jdou instrukce i data po jedné sběrnici, takže se musí střídat. Tomu se říká <strong>úzké hrdlo</strong>.</p>
+   <p><strong>Harvardská</strong> architektura má pro instrukce a data dvě oddělené paměti i sběrnice. Obojí tak jde zároveň.</p>`,
+   lab:'arch', labTitle:'Podívejte se na rozdíl', labHint:'Přepněte architekturu a sledujte pohyb po sběrnici.',
+   key:'Dnešní procesory to kombinují: hlavní paměť je společná, ale cache je rozdělená na instrukce a data.'},
+
+  {t:'Instrukční cyklus', html:`
+   <p>Procesor pořád dokola opakuje čtyři kroky: <strong>načte</strong> instrukci, <strong>dekóduje</strong> ji, <strong>provede</strong> ji a <strong>uloží</strong> výsledek.</p>
+   <p>Rychlost udává <strong>taktovací frekvence</strong>. 3 GHz jsou tři miliardy taktů za sekundu.</p>`,
+   lab:'cycle', labTitle:'Krok za krokem', labHint:'Projděte cyklus ručně, nebo si ho nechte přehrát.',
+   key:'Vyšší frekvence sama neznamená rychlejší počítač. Záleží i na počtu jader a velikosti cache.'},
+
+  {t:'Propustnost PCIe', html:`
+   <p><strong>PCI Express</strong> připojuje grafické karty a rychlé disky. Čím víc linek a novější generace, tím rychlejší.</p>`,
+   lab:'pcie', labTitle:'Kolik dat protečou linky PCIe',
+   key:'Každá nová generace PCIe zhruba zdvojnásobí rychlost jedné linky.'}
+ ],
+ tasks:[
+  {q:"Procesor A má taktovací frekvenci <b>4,2 GHz</b> a čtyři jádra. Procesor B má <b>3,1 GHz</b> a šestnáct jader. Student z toho usoudí, že A je rychlejší, protože má vyšší frekvenci. Za jakých okolností má pravdu a kdy se plete?",
+   s:"<p><b>Záleží výhradně na tom, co se na procesoru poběží.</b></p><p><b>A vyhraje</b> u úloh, které se nedají rozdělit — starší hry, jednovláknové výpočty, běžná kancelářská práce. Tam pracuje reálně jen jedno jádro a rozhoduje frekvence.</p><p><b>B vyhraje</b> u úloh, které se rozdělit dají — překlad kódu, export videa, virtuální stroje, servery. Šestnáct pomalejších jader tam snadno přebije čtyři rychlá.</p><p><b>Frekvence se navíc dá porovnávat jen v rámci jedné generace.</b> Roli hraje i to, kolik instrukcí procesor stihne za takt, velikost cache a rychlost paměti. Proto se výkon posuzuje testy, ne čísly z katalogu.</p>"},
+  {q:"Proč se čistá harvardská architektura prosadila v jednočipových mikrokontrolérech (třeba v pračce nebo v Arduinu), ale v běžném počítači ne?",
+   s:"<p><b>Rozhoduje to, jestli se program mění, nebo ne.</b></p><p>V mikrokontroléru je program pevně daný a při výrobě uložený do paměti jen pro čtení. Oddělit ho od dat je proto přirozené — a přináší to vyšší rychlost i bezpečnost, protože program nejde přepsat.</p><p>Běžný počítač naopak musí umět <b>spustit libovolný program</b>, který se do paměti teprve nahraje ze souboru. Program je tedy pro počítač v okamžiku načítání jen obyčejná data. Ostré oddělení obou pamětí by tenhle základní úkon znemožnilo.</p><p><b>Kompromisem je modifikovaná harvardská architektura:</b> hlavní paměť společná, cache oddělená. Počítač si tak zachová univerzálnost a přesto získá část rychlostní výhody.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Čím se harvardská architektura liší od von Neumannovy?',
+   o:['Nepoužívá vyrovnávací paměť cache','Má oddělenou paměť a sběrnici pro instrukce a pro data','Ukládá program na disk místo do paměti','Zpracovává instrukce v opačném pořadí'],c:1,
+   e:'Oddělené cesty znamenají, že instrukce i data se přenášejí současně. Odpadá tím von Neumannovo úzké hrdlo.'},
+  {t:'choice',q:'Které dvě části tvoří dohromady procesor?',
+   o:['Paměť a vstup','Řadič a aritmeticko-logická jednotka','Vstup a výstup','Sběrnice a paměť'],c:1,
+   e:'Řadič řídí chod počítače, ALU počítá. Doplňují je registry a vyrovnávací paměť cache.'},
+  {t:'choice',q:'V jakém pořadí probíhá instrukční cyklus?',
+   o:['Dekódování → načtení → uložení → provedení','Načtení → dekódování → provedení → uložení','Provedení → načtení → dekódování → uložení','Uložení → provedení → načtení → dekódování'],c:1,
+   e:'Nejdřív se instrukce načte z paměti, pak se rozpozná, provede a nakonec se uloží výsledek.'}
+ ],
+ recap:[
+  '<b>Von Neumannovo schéma:</b> řadič, ALU, paměť, vstup, výstup — a program uložený ve stejné paměti jako data.',
+  '<b>Procesor</b> tvoří řadič a ALU, doplněné registry a cache.',
+  '<b>Harvardská architektura</b> odděluje paměť programu a dat, takže obojí putuje současně.',
+  '<b>Dnešní procesory</b> mají modifikovanou harvardskou architekturu — oddělenou cache, společnou hlavní paměť.',
+  '<b>Instrukční cyklus:</b> načtení, dekódování, provedení, uložení výsledku.',
+  '<b>Taktovací frekvence</b> udává počet taktů za sekundu, ale sama o sobě o výkonu nerozhoduje.'
+ ]
+},
+
+{
+ id:3, mins:8, title:'Základní části počítače', sub:'Deska, procesor, paměť, disk, grafika, zdroj',
+ blurb:'Co je uvnitř skříně a k čemu jednotlivé součástky slouží.',
+ sections:[
+  {t:'Hardware a software', html:`
+   <p><strong>Hardware</strong> je všechno, na co si sáhnete. <strong>Software</strong> jsou programy. <strong>Firmware</strong> je malý program přímo v součástce, který ji oživí.</p>`,
+   key:'Základní deska propojuje všechny ostatní části a rozvádí k nim proud i data.'},
+
+  {t:'Součásti sestavy', html:`
+   <p>Každá součástka má jednu hlavní úlohu. Proklikejte si je.</p>`,
+   lab:'parts', labTitle:'Co která součástka dělá', labHint:'Klikněte na komponentu.',
+   key:'Procesor a RAM určují svižnost, disk rychlost startu, grafická karta výkon ve hrách.'},
+
+  {t:'Základní deska zblízka', html:`
+   <p><strong>Patice</strong> (socket) určuje, jaký procesor na desku pasuje. Intel a AMD mají každý jinou.</p>
+   <p><strong>Formát</strong> desky určuje její velikost: ATX je velká, microATX střední, Mini-ITX malá.</p>`,
+   facts:{title:'Co na desce najdete', rows:[
+     ['Patice','místo pro procesor'],
+     ['Sloty DIMM','pro operační paměť'],
+     ['Sloty PCIe','pro grafickou kartu'],
+     ['M.2 a SATA','pro disky']]},
+   key:'Před upgradem procesoru vždy zkontrolujte patici.', keyWarn:true},
+
+  {t:'Napájecí zdroj', html:`
+   <p>Zdroj mění proud ze zásuvky na takový, jaký potřebují součástky. Musí zvládnout jejich spotřebu a mít asi 40 % rezervu.</p>`,
+   lab:'psu', labTitle:'Jaký zdroj sestava potřebuje', labHint:'Poskládejte sestavu a podívejte se na doporučený výkon.',
+   key:'Slabý zdroj se pozná tak, že se počítač při zátěži sám restartuje.', keyWarn:true}
+ ],
+ tasks:[
+  {q:"Škola má rozpočet na deset počítačů do učebny informatiky. Budou se na nich používat prohlížeč, kancelářský balík a programování v Pythonu. Do čeho byste peníze dali přednostně a co byste naopak omezili? Zdůvodněte.",
+   s:"<p><b>Přednostně:</b></p><p><b>SSD místo pevného disku</b> — největší rozdíl, který žák pozná okamžitě. Start systému i otevírání programů se zkrátí několikanásobně. Kapacita může být malá, data stejně budou na síti.</p><p><b>16 GB operační paměti</b> ve dvou modulech. Prohlížeč s dvaceti panely spolkne víc, než by člověk čekal, a nedostatek paměti se projeví okamžitě.</p><p><b>Kvalitní zdroj a monitor</b> — na obojí se student dívá, respektive obojí rozhoduje o životnosti sestavy.</p><p><b>Naopak omezit:</b></p><p><b>Grafickou kartu.</b> Pro uvedené použití integrovaná grafika bohatě stačí a ušetří se tím podstatná část rozpočtu i spotřeby.</p><p><b>Procesor nejvyšší třídy.</b> Čtyřjádro střední třídy zvládne výuku bez problémů. Rozdíl proti nejdražšímu modelu student nepozná, cenu ale ano.</p>"},
+  {q:"Do tříleté sestavy chcete dát nový, výkonnější procesor. Co všechno musíte zkontrolovat, než ho objednáte?",
+   s:"<p><b>1. Patici (socket).</b> Musí odpovídat. Intel i AMD mění patice po několika generacích a nový procesor na starou desku často nepasuje ani mechanicky.</p><p><b>2. Podporu čipové sady.</b> I když patice sedí, deska musí konkrétní model podporovat. Někdy stačí aktualizace firmwaru — tu je ale nutné udělat <i>před</i> výměnou, se starým procesorem.</p><p><b>3. Výkon zdroje.</b> Silnější procesor odebere víc. Spočítejte spotřebu sestavy a přidejte rezervu.</p><p><b>4. Chlazení.</b> Vyšší TDP znamená větší chladič. Původní často nestačí.</p><p><b>5. Jestli to má vůbec smysl.</b> U tříleté sestavy bývá lepší investice do SSD nebo paměti — zrychlí běžnou práci víc než nový procesor.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Která součást propojuje všechny ostatní části počítače?',
+   o:['Procesor','Základní deska','Napájecí zdroj','Operační paměť'],c:1,
+   e:'Základní deska nese patici procesoru, sloty pamětí, rozšiřující sloty i konektory a rozvádí mezi ně data i napájení.'},
+  {t:'choice',q:'Co určuje patice (socket) na základní desce?',
+   o:['Kolik operační paměti deska unese','Které procesory lze na desku osadit','Kolik disků lze připojit','Jakou grafickou kartu deska podporuje'],c:1,
+   e:'Patice musí odpovídat procesoru. Intel a AMD používají vlastní a vzájemně nezaměnitelné patice.'},
+  {t:'text',q:'Kolik jader má procesor označovaný jako hexa-core?',a:['6','šest'],
+   e:'Šest. Dual-core dvě, quad-core čtyři, octa-core osm.'}
+ ],
+ recap:[
+  '<b>Základní deska</b> propojuje všechny součástky a určuje, co do sestavy půjde zapojit.',
+  '<b>Patice a čipová sada</b> rozhodují o tom, jaký procesor a kolik periferií deska unese.',
+  '<b>Procesor</b> počítá, <b>operační paměť</b> mu drží rozpracovaná data po ruce.',
+  '<b>SSD</b> nemá pohyblivé části, a proto startuje systém řádově rychleji než pevný disk.',
+  '<b>Grafická karta</b> má vlastní čip i paměť; k desce se připojuje přes PCIe.',
+  '<b>Zdroj</b> musí pokrýt součet spotřeby s rezervou asi 40 %, jinak se počítač pod zátěží restartuje.'
+ ]
+},
+
+{
+ id:4, mins:8, title:'Sběrnice a rozhraní', sub:'USB, SATA, PCIe a jejich rychlosti',
+ blurb:'Čím se k počítači připojují disky, karty a periferie.',
+ sections:[
+  {t:'Sériově, nebo paralelně', html:`
+   <p><strong>Paralelní</strong> přenos posílá víc bitů najednou po mnoha vodičích. Vodiče se ale navzájem ruší.</p>
+   <p><strong>Sériový</strong> přenos posílá bity za sebou, zato velmi rychle. Tak dnes funguje USB, SATA i PCIe.</p>`,
+   key:'Dnes vyhrává sériový přenos — dá se zrychlovat mnohem víc.'},
+
+  {t:'Univerzální sběrnice USB', html:`
+   <p><strong>USB</strong> přenáší data i napájení. Zařízení se dá připojit za chodu a systém ho sám rozpozná.</p>
+   <p>Nové zařízení funguje i ve starém portu, jen pomaleji. <strong>USB-C</strong> je oboustranný a zvládne data, obraz i nabíjení.</p>`,
+   facts:{title:'Generace USB', rows:[
+     ['USB 2.0','480 Mb/s'],
+     ['USB 3.0','5 Gb/s — modrý port'],
+     ['USB4','až 40 Gb/s']]},
+   key:'Rychlost vždy určuje ten pomalejší konec — port, nebo zařízení.'},
+
+  {t:'Přehled rozhraní', html:`
+   <p>Vyzkoušejte, jak dlouho potrvá přenést soubor po různých rozhraních.</p>`,
+   lab:'iface', labTitle:'Za jak dlouho se soubor přenese', labHint:'Vyberte rozhraní a velikost souboru.',
+   key:'Uváděné rychlosti jsou maxima. Ve skutečnosti je přenos pomalejší.', keyWarn:true},
+
+  {t:'Disková rozhraní', html:`
+   <p>Disky se připojují přes <strong>SATA</strong> (nejvýš 600 MB/s), nebo přes <strong>NVMe</strong>, které jede přímo po PCIe a je mnohokrát rychlejší.</p>`,
+   key:'Konektor M.2 o rychlosti nic neříká. Rozhoduje, jestli disk v něm jede přes SATA, nebo NVMe.', keyWarn:true}
+ ],
+ tasks:[
+  {q:"Student připojí nový externí SSD s rozhraním <b>USB 3.2 Gen 2</b> (10 Gb/s) do notebooku a naměří rychlost jen 40 MB/s. Vyjmenujte aspoň tři možné příčiny a popište, jak byste je postupně vyloučili.",
+   s:"<p><b>Příčina 1 — port je pomalejší než disk.</b> Zapojil do černého portu USB 2.0, který zvládne kolem 40 MB/s. Rychlost vždy určuje pomalejší konec. <i>Ověření:</i> zkusit modrý nebo USB-C port.</p><p><b>Příčina 2 — kabel.</b> Kabel z nabíječky často vede jen napájení a dva datové vodiče, tedy USB 2.0. <i>Ověření:</i> vyzkoušet kabel dodaný s diskem.</p><p><b>Příčina 3 — souborový systém a typ souborů.</b> Kopírování tisíců drobných souborů je vždy mnohem pomalejší než jeden velký. <i>Ověření:</i> změřit na jednom velkém souboru.</p><p><b>Postup:</b> od nejlevnějšího a nejrychlejšího testu — nejdřív jiný port, pak jiný kabel, pak jiný typ dat. Naměřených 40 MB/s ovšem hodně nápadně odpovídá stropu USB 2.0, takže bych začal portem.</p>"},
+  {q:"Dva disky mají oba konektor <b>M.2</b> a stejnou kapacitu, ale jeden stojí dvakrát tolik. Čím to může být a jak zjistíte, který je který?",
+   s:"<p><b>Konektor M.2 sám o sobě nic o rychlosti neříká.</b> Existují dvě zcela odlišné varianty:</p><p><b>M.2 SATA</b> — disk je vnitřně připojený přes SATA, takže naráží na strop 600 MB/s. Levnější.</p><p><b>M.2 NVMe</b> — disk sedí přímo na linkách PCIe a dosahuje tisíců MB/s. Dražší.</p><p><b>Jak poznat:</b> podle zářezů na konektoru (klíčů). Varianta SATA má dva zářezy (B+M), NVMe zpravidla jeden (M). Spolehlivější je ale podívat se do specifikace na rozhraní a uváděnou rychlost čtení — u SATA nikdy nepřekročí 560 MB/s.</p><p><b>Pozor i na desku:</b> některé sloty M.2 podporují jen jednu z variant. To je nutné ověřit v návodu k desce.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Proč sériový přenos vytlačil paralelní?',
+   o:['Potřebuje méně vodičů, a proto je levnější','Dá se provozovat na mnohem vyšší frekvenci bez rušení mezi vodiči','Přenáší více bitů najednou','Nepotřebuje kontrolu chyb'],c:1,
+   e:'U paralelního přenosu se signály na sousedních vodičích ovlivňují a nedorazí zároveň. Sériová linka tenhle problém nemá.'},
+  {t:'choice',q:'Jakou propustnost má rozhraní SATA III?',
+   o:['150 MB/s','300 MB/s','600 MB/s','1200 MB/s'],c:2,
+   e:'Každá generace SATA propustnost zdvojnásobila: 150, 300 a 600 MB/s.'},
+  {t:'choice',q:'Co umí konektor USB-C navíc oproti staršímu USB-A?',
+   o:['Nic, liší se jen tvarem','Je oboustranný a zvládne data, napájení i obraz','Funguje bez ovladačů','Přenáší pouze zvuk'],c:1,
+   e:'USB-C nelze zastrčit obráceně a jedním kabelem přenese data, obraz i napájení až 240 W.'}
+ ],
+ recap:[
+  '<b>Sériový přenos</b> vytlačil paralelní, protože snese mnohem vyšší frekvence.',
+  '<b>USB</b> vede data i napájení, zvládá plug and play a připojení za chodu.',
+  '<b>Generace USB</b> jsou zpětně kompatibilní — rychlost určuje pomalejší konec.',
+  '<b>USB-C</b> je oboustranný a jedním kabelem přenese data, obraz i napájení až 240 W.',
+  '<b>SATA</b> má tři generace: 150, 300 a 600 MB/s.',
+  '<b>NVMe</b> připojuje disk přímo na PCIe a obchází tím strop SATA.'
+ ]
+},
+
+{
+ id:5, mins:7, title:'Paměti v počítači', sub:'ROM, RAM a hierarchie pamětí',
+ blurb:'Proč počítač potřebuje pět druhů paměti místo jedné.',
+ sections:[
+  {t:'ROM a RAM', html:`
+   <p><strong>ROM</strong> si obsah pamatuje i bez proudu. <strong>RAM</strong> je rychlá, ale po vypnutí je prázdná.</p>
+   <p><strong>Flash</strong> paměť (SSD, flash disk) si pamatuje bez proudu a dá se přepisovat.</p>`,
+   key:'RAM je pracovní stůl, disk je skříň. Na stole je místa méně, ale všechno je hned po ruce.'},
+
+  {t:'Hierarchie pamětí', html:`
+   <p>Rychlá paměť je drahá, levná je pomalá. Proto má počítač paměti v pyramidě: nahoře malé a rychlé, dole velké a pomalé.</p>
+   <p><strong>Cache</strong> leží mezi procesorem a RAM. Drží data, se kterými se právě pracuje.</p>`,
+   lab:'pyramid', labTitle:'Pyramida pamětí', labHint:'Klikněte na úroveň a porovnejte kapacitu s rychlostí.',
+   key:'Pořadí od nejrychlejší: registry → cache → RAM → SSD → pevný disk.'},
+
+  {t:'Operační paměť v praxi', html:`
+   <p>Když RAM dojde, systém začne odkládat data na disk a počítač se výrazně zpomalí.</p>
+   <p>Paměť se vkládá po dvou stejných modulech. Pak běží ve <strong>dvoukanálovém režimu</strong> a je rychlejší.</p>`,
+   key:'Dva moduly po 8 GB jsou lepší než jeden 16GB.'}
+ ],
+ tasks:[
+  {q:"Student má notebook s 8 GB paměti a stěžuje si, že při práci s dvaceti panely v prohlížeči a otevřeným editorem se všechno zadrhává. Disk přitom svítí skoro pořád. Co se děje a jaká jsou řešení?",
+   s:"<p><b>Došla operační paměť a systém odkládá na disk.</b> Když se data nevejdou do RAM, přesouvá je systém do odkládacího souboru. Disk je ovšem řádově pomalejší, takže každé přepnutí okna znamená čekání — odtud to trvalé svícení diskové kontrolky.</p><p><b>Řešení 1 — přidat paměť.</b> Nejúčinnější. Ideálně na 16 GB a ve dvou modulech, aby fungoval dvoukanálový režim.</p><p><b>Řešení 2 — omezit spotřebu paměti.</b> Zavřít nepoužívané panely, vypnout rozšíření prohlížeče. Zdarma, ale řeší jen následek.</p><p><b>Řešení 3 — SSD, pokud tam ještě je pevný disk.</b> Odkládání nezmizí, ale bude řádově rychlejší, takže zadrhávání výrazně poleví.</p><p><b>Co nepomůže:</b> rychlejší procesor. Ten není úzkým hrdlem, jen čeká.</p>"},
+  {q:"Proč se nevyrábí počítač, který by měl místo celé hierarchie pamětí jen jednu velkou a hodně rychlou paměť? Co by tomu bránilo?",
+   s:"<p><b>Bránila by cena a fyzika, ne technická neschopnost.</b></p><p><b>Cena.</b> Rychlá paměť typu SRAM, ze které se dělá cache, potřebuje na jeden bit šest tranzistorů. DRAM v operační paměti si vystačí s jedním tranzistorem a kondenzátorem. Šestnáct gigabajtů SRAM by stálo víc než celý počítač a zabralo by mnohonásobně víc místa na čipu.</p><p><b>Fyzika.</b> Signál se šíří konečnou rychlostí. Čím větší paměť, tím delší vodiče a tím déle trvá, než se k danému místu dostane. Velká paměť je proto <i>nutně</i> pomalejší než malá, i kdyby byla ze stejné technologie.</p><p><b>Hierarchie je chytrý kompromis.</b> Využívá toho, že programy sahají opakovaně na stejná místa — takzvané lokality. Malá rychlá cache proto v praxi zachytí většinu přístupů a navenek se celek chová skoro jako by celá paměť byla rychlá.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Co se stane s obsahem operační paměti po vypnutí počítače?',
+   o:['Uloží se automaticky na disk','Smaže se, protože RAM je energeticky závislá','Zůstane zachován až týden','Přesune se do cache'],c:1,
+   e:'RAM potřebuje k udržení obsahu napájení. Proto se rozpracovaná práce musí uložit na disk.'},
+  {t:'choice',q:'Která paměť je v počítači nejrychlejší?',
+   o:['Operační paměť RAM','Registry procesoru','Cache L3','Disk SSD'],c:1,
+   e:'Registry jsou přímo v jádře procesoru. Jsou nejmenší, ale přístup k nim trvá jediný takt.'},
+  {t:'text',q:'Kolik úrovní cache mají běžné dnešní procesory?',a:['3','tři'],
+   e:'Tři: L1, L2 a L3. Směrem dolů kapacita roste a rychlost klesá.'}
+ ],
+ recap:[
+  '<b>ROM</b> si pamatuje bez napájení, <b>RAM</b> je po vypnutí prázdná.',
+  '<b>Flash paměť</b> spojuje obojí — uchová obsah bez napájení a přitom se dá přepsat.',
+  '<b>Hierarchie pamětí:</b> registry → cache L1/L2/L3 → RAM → SSD → pevný disk.',
+  '<b>Cache</b> drží kopie dat z RAM, aby na ni procesor nemusel čekat. L1 je nejmenší a nejrychlejší, L3 sdílená mezi jádry.',
+  '<b>Čím rychlejší paměť, tím dražší</b> — proto jí je nahoře pyramidy tak málo.',
+  '<b>Dvoukanálový režim</b> se dvěma moduly výrazně zvýší propustnost paměti.'
+ ]
+},
+
+{
+ id:6, mins:7, title:'Periferie počítače', sub:'Vstupní, výstupní a vstupně-výstupní zařízení',
+ blurb:'Čím do počítače data dostáváme a jak se dostávají zpátky ven.',
+ sections:[
+  {t:'Tři skupiny periferií', html:`
+   <p><strong>Vstupní</strong> zařízení posílají data do počítače (klávesnice, myš). <strong>Výstupní</strong> je posílají ven (monitor, tiskárna). <strong>Vstupně-výstupní</strong> umí obojí (dotykový displej, flash disk).</p>`,
+   key:'Rozhoduje, kterým směrem tečou data — ne jak zařízení vypadá.'},
+
+  {t:'Rozřaďte periferie', html:`
+   <p>Vyzkoušejte si to.</p>`,
+   lab:'sortgame', labTitle:'Kam které zařízení patří', labHint:'Vyberte zařízení a přiřaďte mu skupinu.',
+   key:'Pozor na zařízení s funkcí navíc — herní ovladač s vibracemi je vstupně-výstupní.'},
+
+  {t:'Monitory a tiskárny', html:`
+   <p>U monitoru sledujeme <strong>rozlišení</strong>, <strong>úhlopříčku</strong> a <strong>obnovovací frekvenci</strong> (Hz).</p>
+   <p>Obrazovka skládá barvy z <strong>RGB</strong>, tiskárna z <strong>CMYK</strong>. Proto výtisk vypadá trochu jinak než obraz.</p>
+   <p><strong>Inkoustová</strong> tiskárna je levná na koupi, <strong>laserová</strong> na provoz.</p>`,
+   lab:'dpi', labTitle:'Jak velký výtisk fotografie snese', labHint:'Zadejte rozlišení fotografie a požadovanou kvalitu tisku.',
+   key:'DPI = počet bodů na palec. Fotky se tisknou na 300 DPI.'}
+ ],
+ tasks:[
+  {q:"Rodič chce koupit tiskárnu pro rodinu se dvěma školáky. Tisknou hlavně referáty a občas fotky, dohromady asi 40 stran měsíčně. Prodavač doporučuje inkoustovou za 1 500 Kč. Co byste poradili a proč?",
+   s:"<p><b>U tohohle profilu bych doporučil černobílou laserovou</b>, přestože stojí na pořízení víc.</p><p><b>Rozhodující je způsob používání, ne objem.</b> Čtyřicet stran měsíčně je málo — a právě to je pro inkoustovou tiskárnu nejhorší scénář. Inkoust v tryskách zasychá, tiskárna při každém zapnutí čistí hlavu a spotřebuje přitom víc inkoustu než na samotný tisk. Po pár měsících nepoužívání bývá potřeba nová kazeta, i když se skoro netisklo.</p><p><b>Laserový toner nezasychá.</b> Vydrží roky a jedna náplň zvládne tisíce stran. Na referáty je navíc text ostřejší a odolný proti rozmazání.</p><p><b>Kompromis pro fotky:</b> pár fotek ročně vyjde levněji nechat vyvolat ve fotolabu — kvalita bude lepší než z domácí tiskárny za 1 500 Kč.</p><p><b>Kdy naopak inkoustovou:</b> pokud by se tisklo hodně barevně a pravidelně, nebo u modelů s doplňovacími nádržkami.</p>"},
+  {q:"Fotografie má rozlišení <b>2048 × 1536</b> bodů. Vejde se v kvalitě 300 DPI na formát A4 (21 × 29,7 cm)? Spočítejte a rozhodněte.",
+   s:"<p><b>Výpočet:</b> jeden palec je 2,54 cm.</p><p>Šířka: 2048 ÷ 300 = 6,83 palce → 6,83 × 2,54 = <b>17,3 cm</b><br>Výška: 1536 ÷ 300 = 5,12 palce → 5,12 × 2,54 = <b>13,0 cm</b></p><p><b>Nevejde se.</b> Při 300 DPI vyjde výtisk 17,3 × 13,0 cm, což je zhruba formát pohlednice. Na A4 by se musel zvětšit skoro dvojnásobně a hustota by klesla na asi 175 DPI.</p><p><b>Jenže to nemusí vadit.</b> Na plakát prohlížený z metru je 175 DPI dostačujících. Pravidlo „300 DPI“ platí pro fotografie prohlížené z blízka — u větších formátů se s rostoucí vzdáleností pozorovatele požadavek přirozeně snižuje.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Do které skupiny patří dotykový displej?',
+   o:['Vstupní','Výstupní','Vstupně-výstupní','Nepatří mezi periferie'],c:2,
+   e:'Zobrazuje obraz (výstup) a zároveň přijímá dotyk (vstup), takže data tečou oběma směry.'},
+  {t:'choice',q:'Co udává hodnota DPI u tiskárny?',
+   o:['Počet stránek za minutu','Počet tiskových bodů na palec','Počet barev tonerů','Hmotnost papíru'],c:1,
+   e:'Dots per inch. Čím vyšší hodnota, tím jemnější detaily tiskárna zvládne.'},
+  {t:'text',q:'Kolik barev používá tiskový model CMYK?',a:['4','čtyři'],
+   e:'Čtyři: azurová, purpurová, žlutá a černá.'}
+ ],
+ recap:[
+  '<b>Vstupní</b> zařízení data přinášejí, <b>výstupní</b> je předávají ven, <b>vstupně-výstupní</b> zvládají obojí.',
+  '<b>Rozhoduje směr toku dat</b>, ne vzhled zařízení ani způsob připojení.',
+  '<b>Rozlišení a úhlopříčka</b> spolu určují jemnost obrazu na monitoru.',
+  '<b>DPI</b> je počet tiskových bodů na palec; pro fotografie se počítá s 300 DPI.',
+  '<b>RGB</b> je model pro obrazovky, <b>CMYK</b> čtyřbarevný pro tisk.',
+  '<b>Inkoustová tiskárna</b> je levnější na pořízení, <b>laserová</b> na provoz.'
+ ]
+},
+
+{
+ id:7, mins:7, title:'Mobilní a dotyková zařízení', sub:'Notebooky, tablety, telefony a architektura ARM',
+ blurb:'Proč telefon vydrží celý den, a notebook ne.',
+ sections:[
+  {t:'Kategorie zařízení', html:`
+   <p><strong>Notebook</strong> je přenosný počítač, <strong>ultrabook</strong> jeho tenká a lehká verze, <strong>chromebook</strong> pracuje hlavně v cloudu.</p>
+   <p>Dál sem patří <strong>tablety</strong>, <strong>telefony</strong>, <strong>čtečky knih</strong> a <strong>chytré hodinky</strong>.</p>`,
+   key:'Čtečka vydrží týdny, protože elektronický inkoust bere proud jen při otočení stránky.'},
+
+  {t:'x86 versus ARM', html:`
+   <p>Počítače používají procesory <strong>x86</strong> s mnoha složitými instrukcemi (CISC). Telefony a tablety používají <strong>ARM</strong> s menším počtem jednoduchých instrukcí (RISC).</p>
+   <p>Jednodušší čip spotřebuje méně energie — proto telefon vydrží celý den bez ventilátoru.</p>`,
+   lab:'arm', labTitle:'Dvě filozofie procesorů', labHint:'Přepněte architekturu a porovnejte vlastnosti.',
+   key:'x86 = výkon, ARM = nízká spotřeba. ARM se dnes dostává i do notebooků.'},
+
+  {t:'Displeje a výdrž', html:`
+   <p><strong>LCD</strong> má podsvícení celé plochy. <strong>OLED</strong> svítí každým bodem zvlášť, takže černá nespotřebuje nic.</p>`,
+   key:'Tmavý režim šetří baterii jen u OLED displeje.'}
+ ],
+ tasks:[
+  {q:"Apple v roce 2020 přešel u počítačů Mac z procesorů Intel (x86) na vlastní čipy ARM. Jaké výhody tím získal a co ho to stálo?",
+   s:"<p><b>Co získal:</b></p><p><b>Poměr výkonu ke spotřebě.</b> Notebooky s ARM vydrží na baterii výrazně déle a v mnoha případech nepotřebují ventilátor.</p><p><b>Kontrolu nad vývojem.</b> Apple už nečeká, až Intel vydá nový procesor, a může čip navrhnout přesně na míru svým systémům.</p><p><b>Sjednocení s iPhonem a iPadem.</b> Stejná architektura znamená, že mobilní aplikace běží i na počítači.</p><p><b>Co ho to stálo:</b></p><p><b>Nekompatibilitu.</b> Programy přeložené pro x86 na ARM přímo neběží. Apple to překlenul překladovou vrstvou Rosetta 2, která je ovšem dočasná a stojí výkon.</p><p><b>Ztrátu možnosti spustit Windows</b> tak, jak to šlo dřív, a komplikace pro virtualizaci.</p><p><b>Nutnost přesvědčit vývojáře</b>, aby své programy přeložili znovu. To u menších nástrojů trvalo roky a část jich zanikla.</p>"},
+  {q:"Kolegyně tvrdí, že tmavý režim v telefonu šetří baterii, a proto ho zapíná i na starším tabletu. Má pravdu?",
+   s:"<p><b>U telefonu nejspíš ano, u tabletu podle typu displeje pravděpodobně ne.</b></p><p><b>OLED</b> — každý bod svítí sám a černá znamená, že bod nesvítí vůbec. Tmavý režim tedy skutečně sníží spotřebu, a to znatelně, zvlášť u převážně černého obsahu.</p><p><b>LCD</b> — podsvícení svítí přes celou plochu nepřetržitě, ať je na displeji cokoli. Tekuté krystaly světlo jen propouštějí nebo blokují. Tmavý režim proto <b>spotřebu prakticky nezmění</b>.</p><p><b>Jak to ověřit:</b> na OLED displeji je černá skutečně černá a v temné místnosti nejde poznat, kde obrazovka končí. Na LCD je „černá“ mírně šedá a při pohledu z boku prosvítá.</p><p><b>Tmavý režim má i tak smysl</b> — kvůli menší únavě očí ve tmě. Jen ho neprodávejme jako úsporu tam, kde žádná není.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Čím se architektura ARM liší od x86?',
+   o:['Má vyšší taktovací frekvenci','Má malý počet jednoduchých instrukcí a nižší spotřebu','Nepotřebuje operační paměť','Zvládá pouze celočíselné výpočty'],c:1,
+   e:'ARM staví na přístupu RISC. Jednodušší instrukce znamenají menší a úspornější čip.'},
+  {t:'choice',q:'Jaký displej používají čtečky elektronických knih?',
+   o:['OLED','Elektronický inkoust','Plazmový','CRT'],c:1,
+   e:'Elektronický inkoust odebírá energii jen při překreslení stránky a čte se z něj i na přímém slunci.'},
+  {t:'choice',q:'Co je charakteristické pro ultrabook?',
+   o:['Nemá vlastní baterii','Tenké tělo a parametry stanovené Intelem','Používá výhradně systém Linux','Nelze k němu připojit monitor'],c:1,
+   e:'Označení ultrabook si Intel podmínil konkrétními požadavky na tloušťku, výdrž a rychlost startu.'}
+ ],
+ recap:[
+  '<b>Ultrabook</b> je tenký notebook splňující specifikace Intelu, <b>chromebook</b> staví na cloudu.',
+  '<b>Tablety a telefony</b> se ovládají dotykem a používají mobilní operační systémy.',
+  '<b>x86 (CISC)</b> má rozsáhlou instrukční sadu a vyšší spotřebu, <b>ARM (RISC)</b> jednoduchou sadu a nízkou spotřebu.',
+  '<b>ARM</b> dnes proniká i do notebooků a serverů díky poměru výkonu ke spotřebě.',
+  '<b>OLED</b> svítí každým bodem zvlášť, <b>elektronický inkoust</b> bere energii jen při změně stránky.'
+ ]
+},
+
+{
+ id:8, mins:10, title:'Operační systémy', sub:'Správce prostředků, vrstvy a plánovač procesů',
+ blurb:'Kdo v počítači rozděluje práci mezi programy.',
+ sections:[
+  {t:'K čemu je operační systém', html:`
+   <p>Operační systém je <strong>správce</strong>. Rozděluje mezi programy procesor, paměť, disky a periferie.</p>
+   <p>Programy pak nemusí znát konkrétní hardware. Stačí jim mluvit se systémem.</p>`,
+   key:'Díky systému běží jeden program na tisících různých počítačů.'},
+
+  {t:'Vrstvy systému', html:`
+   <p>Systém má vrstvy. Dole je hardware, nahoře aplikace. Každá vrstva využívá tu pod sebou.</p>
+   <p>Po zapnutí se počítač probouzí odspodu: <strong>napájení → test POST → zavaděč → jádro → služby → přihlášení</strong>.</p>`,
+   lab:'layers', labTitle:'Od hardwaru k aplikacím', labHint:'Klikněte na vrstvu.',
+   key:'Jádro (kernel) jako jediné smí přímo k hardwaru. Ostatní ho musí požádat.'},
+
+  {t:'BIOS a jeho nástupce UEFI', html:`
+   <p><strong>BIOS</strong> je starý firmware, který spustí počítač. Dnes ho nahrazuje <strong>UEFI</strong>: startuje rychleji, zvládá velké disky a má grafické menu.</p>
+   <p>Do nastavení se vstupuje klávesou při startu, většinou <strong>Del</strong> nebo <strong>F2</strong>.</p>`,
+   facts:{title:'BIOS versus UEFI', rows:[
+     ['Rozhraní','BIOS textové · UEFI grafické'],
+     ['Disky','BIOS do 2 TB · UEFI bez omezení'],
+     ['Secure Boot','jen UEFI — pustí jen ověřený systém']]},
+   key:'Secure Boot chrání před podvrženým systémem, ale může vadit při instalaci Linuxu.', keyWarn:true},
+
+  {t:'Plánovač procesů', html:`
+   <p>Jedno jádro zvládne v jednu chvíli jen jednu věc. <strong>Plánovač</strong> proto velmi rychle střídá programy, takže to vypadá, že běží všechny najednou. Tomu se říká <strong>multitasking</strong>.</p>`,
+   lab:'scheduler', labTitle:'Jak se střídají procesy', labHint:'Změňte délku časového kvanta a spusťte plánování.',
+   key:'Každé přepnutí stojí trochu času. Proto se nepřepíná donekonečna často.'},
+
+  {t:'Nejrozšířenější systémy', html:`
+   <p>Na počítačích vládne <strong>Windows</strong>, na serverech <strong>Linux</strong>, na Macích <strong>macOS</strong>. Na mobilech <strong>Android</strong> a <strong>iOS</strong>.</p>`,
+   key:'Linux je zdarma a vychází v různých verzích — distribucích (Ubuntu, Mint, Debian).'}
+ ],
+ tasks:[
+  {q:"Nastavíte plánovači časové kvantum <b>500 ms</b> místo obvyklých několika milisekund. Co se stane s chováním systému a proč?",
+   s:"<p><b>Systém přestane působit plynule.</b></p><p><b>Co se zlepší:</b> ubude přepínání mezi procesy, a tím i režie s ním spojená. Celková propustnost výpočtů mírně vzroste — každý proces dostane delší souvislý úsek a lépe využije obsah cache.</p><p><b>Co se zhorší, a mnohem víc:</b> odezva. Když právě běží jiný proces, musí váš stisk klávesy čekat až půl sekundy. Při pěti běžících procesech to je v nejhorším případě přes dvě vteřiny, než se dostane na řadu ten váš. Uživatel to vnímá jako zaseknutý počítač.</p><p><b>Proto se kvantum volí krátké.</b> Ztráta na propustnosti je malá, kdežto zisk na odezvě zásadní — a u interaktivního systému je odezva to jediné, co uživatel pozná. Vyzkoušet si to jde v simulaci plánovače, kde se s délkou kvanta mění počet přepnutí.</p>"},
+  {q:"Počítač se po zapnutí zastaví na černé obrazovce a nic dál se neděje. Jak byste podle znalosti startovací sekvence postupovali při hledání příčiny?",
+   s:"<p><b>Postupujte po krocích startu odspodu — kde se to zastaví, tam je problém.</b></p><p><b>1. Naskočilo napájení?</b> Točí se ventilátory, svítí kontrolka? Pokud ne, problém je ve zdroji nebo napájení desky, ne v systému.</p><p><b>2. Proběhl POST?</b> Objevilo se logo výrobce nebo pípnutí? Pokud ne, selhal test hardwaru — nejčastěji špatně usazená paměť nebo grafická karta. Pípací kódy v návodu k desce řeknou co.</p><p><b>3. Našel se zavaděč?</b> Dostanete se do nastavení UEFI klávesou Del nebo F2? Pokud ano, hardware žije a chyba je dál. Zkontrolujte, jestli je disk v seznamu zaváděcích zařízení — když tam není, může být odpojený nebo mrtvý.</p><p><b>4. Naběhlo jádro?</b> Objeví se logo systému a pak se to zasekne? Pak jde o software: poškozený systémový soubor nebo vadný ovladač. Řešením bývá nouzový režim a oprava při spuštění.</p><p><b>Smysl postupu:</b> každý krok vyloučí celou vrstvu. Bez toho člověk náhodně zkouší věci, které s příčinou nesouvisejí.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Co je hlavní úlohou operačního systému?',
+   o:['Počítat matematické operace','Spravovat prostředky počítače a rozdělovat je mezi programy','Ukládat dokumenty','Zobrazovat webové stránky'],c:1,
+   e:'Operační systém přiděluje procesor, paměť a vstupně-výstupní zařízení jednotlivým procesům a řeší mezi nimi konflikty.'},
+  {t:'choice',q:'Co provede firmware BIOS nebo UEFI hned po zapnutí počítače?',
+   o:['Načte jádro operačního systému do paměti','Otestuje hardware (POST) a najde zavaděč systému','Spustí ovladače grafické karty','Zkontroluje aktualizace systému'],c:1,
+   e:'Nejdřív proběhne test POST, pak firmware najde zaváděcí záznam a předá řízení operačnímu systému.'},
+  {t:'choice',q:'Co znamená multitasking?',
+   o:['Skutečně souběžný běh programů na více jádrech','Zdánlivě současný běh více procesů díky rychlému přepínání','Rozdělení jednoho programu mezi více počítačů','Práce více uživatelů na jednom souboru'],c:1,
+   e:'Plánovač přiděluje každému procesu krátké časové úseky. Přepínání je tak rychlé, že uživatel vnímá souběžný běh.'}
+ ],
+ recap:[
+  '<b>Operační systém</b> spravuje procesor, paměť, disky a periferie a rozděluje je mezi programy.',
+  '<b>Virtuální počítač</b> znamená, že programy nemusí znát konkrétní hardware.',
+  '<b>Vrstvy:</b> hardware → firmware → jádro → systémové služby → rozhraní → aplikace.',
+  '<b>Start počítače:</b> napájení → POST → zavaděč → jádro → služby → grafické rozhraní.',
+  '<b>Jádro (kernel)</b> je jediná část s plným přístupem k hardwaru.',
+  '<b>UEFI</b> nahrazuje starší BIOS — grafické rozhraní, disky nad 2 TB, Secure Boot.',
+  '<b>Plánovač</b> rychle přepíná mezi procesy, čímž vzniká dojem souběžného běhu.'
+ ]
+},
+
+{
+ id:9, mins:6, title:'Bezdrátové prezentování', sub:'AirPlay, Miracast, Chromecast a spol.',
+ blurb:'Jak dostat obraz z notebooku na projektor bez kabelu.',
+ sections:[
+  {t:'Proč bezdrátově', html:`
+   <p>Bez kabelu se může přednášející volně pohybovat. Spojení může být <strong>přímé</strong> (bez Wi-Fi), nebo <strong>přes síť</strong> (potřebuje společnou Wi-Fi).</p>`,
+   key:'Ve škole plné Wi-Fi sítí bývá spolehlivější přímé spojení.'},
+
+  {t:'Přehled technologií', html:`
+   <p>Každá technologie patří k jiným zařízením. Proklikejte si je.</p>`,
+   lab:'wireless', labTitle:'Čím se technologie liší', labHint:'Klikněte na technologii.',
+   key:'Miracast jede napřímo. AirPlay a Chromecast potřebují Wi-Fi.'},
+
+  {t:'Co si pořídit', html:`
+   <p>Starý projektor nemusíte vyhazovat. Stačí do něj zapojit bezdrátový adaptér do HDMI.</p>`,
+   lab:'wizard', labTitle:'Průvodce výběrem', labHint:'Odpovězte na dvě otázky.',
+   key:'Nejlevnější řešení je adaptér za pár stovek, ne nový projektor.'}
+ ],
+ tasks:[
+  {q:"Do učebny s projektorem bez Wi-Fi chodí učitelé s notebooky s Windows, dva mají MacBook a část žáků pracuje na tabletech s Androidem. Navrhněte řešení a zdůvodněte volbu.",
+   s:"<p><b>Doporučené řešení: multiplatformní přijímač typu ShareLink nebo adaptér s podporou EzCast.</b></p><p><b>Proč ne jednoúčelové řešení:</b> Apple TV by odřízla Windows i Android, Miracast zase nefunguje se zařízeními Apple. Při téhle skladbě zařízení by kterákoli jednostranná volba znamenala, že část lidí prezentovat nemůže.</p><p><b>Projektor měnit netřeba.</b> Přijímač se zapojí do portu HDMI a napájí se z USB. Vyjde na zlomek ceny nového projektoru.</p><p><b>Výhoda navíc:</b> ShareLink zobrazí až čtyři zařízení současně a nabízí režim moderátora — což se hodí zrovna při skupinové práci žáků, kdy každá skupina ukazuje svůj výstup.</p><p><b>Na co si dát pozor:</b> ve škole plné Wi-Fi sítí hrozí rušení. Před nákupem je rozumné vyzkoušet kus přímo v té učebně, ne v prázdné kanceláři.</p>"},
+  {q:"Proč se Miracast připojuje přímo mezi zařízeními, kdežto Chromecast přes síť Wi-Fi? Jaké praktické důsledky to má pro použití ve škole?",
+   s:"<p><b>Je to důsledek toho, k čemu byly navržené.</b></p><p><b>Miracast</b> vznikl jako náhrada kabelu. Vytvoří přímé spojení mezi dvěma zařízeními, funguje kdekoli a bez správce sítě. Zato umí jediné — zrcadlit displej.</p><p><b>Chromecast</b> vznikl pro streamování. Připojí se do sítě a obsah si stáhne sám z internetu, takže telefon slouží jen jako dálkové ovládání a může se mezitím vybít nebo odejít pryč.</p><p><b>Praktické důsledky ve škole:</b></p><p><b>Pro Miracast</b> mluví nezávislost na síti — funguje i při výpadku internetu a nevyžaduje domlouvání se správcem sítě. To je ve školním prostředí velká výhoda.</p><p><b>Proti Chromecastu</b> mluví, že školní sítě často oddělují zařízení od sebe kvůli bezpečnosti, takže se navzájem „nevidí“. Pak Chromecast nefunguje, dokud správce neudělá výjimku.</p><p><b>Pro Chromecast</b> naopak mluví možnost pustit video z internetu bez zatížení notebooku a bez toho, aby se na plátně objevovaly notifikace přednášejícího.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Která technologie je otevřený standard podporovaný Androidem a Windows?',
+   o:['AirPlay','Intel WiDi','Miracast','ShareLink'],c:2,
+   e:'Miracast vznikl pod Wi-Fi Alliance jako otevřená alternativa k řešením vázaným na jednoho výrobce.'},
+  {t:'text',q:'Kolik zařízení zobrazí ShareLink současně na jedné obrazovce?',a:['4','čtyři'],
+   e:'Čtyři. Navíc nabízí režim moderátora, který určuje, čí obraz se zobrazí.'},
+  {t:'choice',q:'Čím se Chromecast liší od Miracastu?',
+   o:['Nepotřebuje port HDMI','Připojuje se přes síť Wi-Fi, ne přímo mezi zařízeními','Funguje jen se zařízeními Apple','Přenáší obraz bez zvuku'],c:1,
+   e:'Chromecast se připojí do sítě a dokáže obsah stahovat sám z internetu. Miracast tvoří přímé spojení mezi dvěma zařízeními.'}
+ ],
+ recap:[
+  '<b>Přímé spojení</b> (Miracast, WiDi) funguje i bez sítě, <b>přes Wi-Fi</b> (AirPlay, Chromecast) potřebuje infrastrukturu.',
+  '<b>AirPlay</b> patří k zařízením Apple a jede přes společnou Wi-Fi.',
+  '<b>Miracast</b> je otevřený standard pro Android 4.2+ a Windows 8.1+.',
+  '<b>Chromecast</b> umí obsah načítat rovnou z internetu, ne jen zrcadlit.',
+  '<b>ShareLink</b> zobrazí až čtyři zařízení najednou a nabízí režim moderátora.',
+  '<b>Starší projektor</b> stačí doplnit adaptérem do HDMI, není nutné ho měnit.'
+ ]
+},
+
+{
+ id:10, mins:10, title:'Bezpečnost a komprimace', sub:'Malware, phishing a komprimační algoritmy',
+ blurb:'Co počítači hrozí a jak zmenšit soubory bez ztráty dat.',
+ sections:[
+  {t:'Škodlivý software', html:`
+   <p><strong>Malware</strong> je souhrnný název pro škodlivé programy.</p>`,
+   facts:{title:'Hlavní typy', rows:[
+     ['Virus','šíří se do dalších souborů'],
+     ['Trojský kůň','tváří se jako užitečný program'],
+     ['Spyware','sleduje, co děláte'],
+     ['Keylogger','zaznamenává stisky kláves, třeba hesla'],
+     ['Ransomware','zašifruje data a chce výkupné']]},
+   key:'Proti ransomwaru pomůže jen záloha uložená mimo počítač.', keyWarn:true},
+
+  {t:'Jak se chránit', html:`
+   <p>Základ tvoří <strong>firewall</strong>, <strong>antivirus</strong> a <strong>aktualizace</strong>. K tomu silná hesla, dvoufázové ověření a pravidelná záloha.</p>`,
+   key:'Nejslabším místem je většinou člověk, ne program.', keyWarn:true},
+
+  {t:'Hoax a řetězové zprávy', html:`
+   <p><strong>Hoax</strong> je falešná poplašná zpráva. Neobsahuje virus, ale šíří strach a nepravdy.</p>
+   <p>Pozná se podle výzvy „pošli to všem“ a podle chybějícího zdroje.</p>`,
+   key:'Než zprávu přepošlete, vyhledejte její první větu. Hoax bývá rychle vyvrácený.'},
+
+  {t:'Poznejte phishing', html:`
+   <p><strong>Phishing</strong> je podvodná zpráva, která se tváří jako od banky nebo úřadu a chce vaše heslo.</p>`,
+   lab:'phish', labTitle:'Najděte podezřelé znaky', labHint:'Klikněte na vše, co ve zprávě nesedí.',
+   key:'Banka nikdy nechce heslo e-mailem. Na odkaz neklikejte, adresu napište ručně.', keyWarn:true},
+
+  {t:'Komprimace dat', html:`
+   <p><strong>Bezztrátová</strong> komprese soubor zmenší a dá se přesně vrátit (ZIP, PNG). <strong>Ztrátová</strong> část dat zahodí, ale soubor je mnohem menší (JPG, MP3).</p>
+   <p>Nejjednodušší metoda je <strong>RLE</strong>: AAAB se zapíše jako 3A1B.</p>`,
+   lab:'rle', labTitle:'Komprimace metodou RLE', labHint:'Napište text a sledujte, jak se zkrátí.',
+   key:'Dokumenty a programy se smí komprimovat jen bezztrátově — jeden změněný bit je zničí.'}
+ ],
+ tasks:[
+  {q:"Žákyně dostane e-mail: odesílatel <i>podpora@microsoft-ucet-overeni.com</i>, předmět „Váš účet bude smazán“, uvnitř odkaz na přihlášení. Popište, podle čeho poznáte podvod, a co má udělat, pokud už na odkaz klikla a zadala heslo.",
+   s:"<p><b>Znaky podvodu:</b></p><p><b>Doména.</b> Microsoft píše z <i>microsoft.com</i>, ne z <i>microsoft-ucet-overeni.com</i>. Podvodníci si registrují domény, které obsahují jméno firmy, ale patří jim.</p><p><b>Hrozba s termínem.</b> Smyslem je vyvolat spěch, aby oběť neměla čas přemýšlet ani se poradit.</p><p><b>Odkaz na přihlášení v e-mailu.</b> Legitimní služby vás nechají přihlásit se vlastní cestou.</p><p><b>Když už heslo zadala:</b></p><p><b>1. Okamžitě změnit heslo</b> — na skutečném webu, adresa napsaná ručně, ne z e-mailu.</p><p><b>2. Změnit ho i všude jinde</b>, kde ho používala. Útočník ho vyzkouší na dalších službách.</p><p><b>3. Zapnout dvoufázové ověření.</b> Pak samotné heslo útočníkovi nestačí.</p><p><b>4. Zkontrolovat odeslanou poštu a pravidla přesměrování</b> — útočníci si často nastaví tiché přeposílání zpráv.</p><p><b>5. Nezastírat to.</b> Nasednout na phishing není hloupost, útoky bývají velmi přesvědčivé. Důležité je jednat rychle.</p>"},
+  {q:"Máte zkomprimovat dvě věci: <b>naskenovanou černobílou stránku textu</b> a <b>fotografii západu slunce</b>. Jaký typ komprese zvolíte pro každou z nich a proč?",
+   s:"<p><b>Naskenovaná černobílá stránka → bezztrátová komprese (PNG, TIFF).</b></p><p>Obrázek obsahuje dlouhé souvislé plochy bílé, přerušované černým textem. To je přesně situace, kde bezztrátové metody typu RLE fungují skvěle a soubor zmenší i desetinásobně. Ztrátová komprese by navíc kolem písmen vytvořila artefakty a text by se hůř četl — a pokud by měl projít strojovým rozpoznáním, mohlo by to výsledek pokazit.</p><p><b>Fotografie západu slunce → ztrátová komprese (JPG).</b></p><p>Fotografie je plná jemných barevných přechodů, kde skoro žádné dva sousední body nejsou stejné. RLE by soubor dokonce zvětšil. Lidské oko přitom drobné rozdíly v odstínech nerozezná, takže se dají zahodit — JPG zmenší soubor klidně dvacetinásobně, aniž si toho někdo všimne.</p><p><b>Obecné pravidlo:</b> ztrátová komprese tam, kde výsledek posuzuje lidský smysl (obraz, zvuk). Bezztrátová tam, kde na přesnosti záleží — dokumenty, programy, archivy, data k dalšímu zpracování.</p>"}
+ ],
+ questions:[
+  {t:'choice',q:'Co dělá ransomware?',
+   o:['Zobrazuje vyskakovací reklamy','Zašifruje data a požaduje výkupné','Odesílá hesla útočníkovi','Zapojí počítač do sítě botnetu'],c:1,
+   e:'Šifrovací klíč si útočník ponechá a nabízí ho výměnou za platbu. Nejlepší obranou je pravidelná záloha mimo počítač.'},
+  {t:'choice',q:'Který formát používá bezztrátovou kompresi?',
+   o:['JPG','MP3','PNG','MP4'],c:2,
+   e:'PNG obnoví obrázek přesně tak, jak byl. JPG, MP3 i MP4 část informace nenávratně zahazují.'},
+  {t:'choice',q:'Jak metoda RLE zkomprimuje řetězec AAAABBBCC?',
+   o:['ABC','4A3B2C','AAAABBBCC','9ABC'],c:1,
+   e:'Čtyři A, tři B, dvě C. Devět znaků se zkrátí na šest.'}
+ ],
+ recap:[
+  '<b>Malware</b> zastřešuje adware, spyware, viry i trojské koně.',
+  '<b>Trojský kůň</b> se maskuje za užitečný program — bývá to keylogger, sniffer nebo backdoor.',
+  '<b>Ransomware</b> zašifruje data a žádá výkupné; jedinou obranou je záloha mimo počítač.',
+  '<b>Firewall, antivirus a aktualizace</b> tvoří technickou vrstvu obrany, chování uživatele tu důležitější.',
+  '<b>Phishing</b> poznáte podle naléhavého tónu, cizí adresy odesílatele a odkazu, který vede jinam, než tvrdí.',
+  '<b>Bezztrátová</b> komprese data obnoví přesně (ZIP, PNG), <b>ztrátová</b> část zahodí (JPG, MP3).',
+  '<b>Hoax</b> neškodí technicky, ale šíří paniku — pozná se podle výzvy k přeposlání.',
+  '<b>Algoritmy:</b> RLE nahrazuje opakování, LZ77 odkazuje na dřívější úseky, Huffman zkracuje časté znaky.'
+ ]
+}
+];
+
+/* ══════════════════════════════════════════════════════
+   INTERAKTIVNÍ PRVKY
+══════════════════════════════════════════════════════ */
+const WIDGETS={};
+const $=(h,s)=>h.querySelector(s);
+const $$=(h,s)=>[...h.querySelectorAll(s)];
+
+function fmtTime(s){
+  if(s<1) return Math.round(s*1000)+' ms';
+  if(s<60) return Math.round(s)+' s';
+  if(s<3600){const m=Math.floor(s/60),r=Math.round(s%60);return m+' min'+(r?' '+r+' s':'');}
+  const h=Math.floor(s/3600),m=Math.round((s%3600)/60);
+  return h+' h'+(m?' '+m+' min':'');
+}
+function logLine(box,txt,val,cls){
+  const d=document.createElement('div');
+  d.className='lg'+(cls?' '+cls:'');
+  d.innerHTML=`<span>${txt}</span>${val?`<em>${val}</em>`:''}`;
+  box.appendChild(d);
+  box.scrollTop=box.scrollHeight;
+}
+
+/* ── 1. BITY ──────────────────────────────────────── */
+WIDGETS.bits=function(h){
+  const P=[128,64,32,16,8,4,2,1];
+  let b=[0,0,0,0,0,0,0,0];
+  h.innerHTML=`<div class="bits"></div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Dvojkově</div><div class="rd-v sm" data-r="bin">00000000</div></div>
+      <div class="rd-c"><div class="rd-k">Desítkově</div><div class="rd-v" data-r="dec">0</div></div>
+      <div class="rd-c"><div class="rd-k">Hex</div><div class="rd-v" data-r="hex">0x00</div></div>
+      <div class="rd-c"><div class="rd-k">Znak ASCII</div><div class="rd-v" data-r="chr">—</div></div>
+    </div>
+    <div class="brow">
+      <button class="btn btn-g btn-s" data-s="0">Vynulovat</button>
+      <button class="btn btn-g btn-s" data-s="65">A</button>
+      <button class="btn btn-g btn-s" data-s="122">z</button>
+      <button class="btn btn-g btn-s" data-s="255">Vše</button>
+    </div>`;
+  const row=$(h,'.bits'), R=n=>$(h,`[data-r="${n}"]`);
+  P.forEach((p,i)=>{
+    const el=document.createElement('button');
+    el.className='bit'; el.type='button'; el.setAttribute('aria-pressed','false');
+    el.setAttribute('aria-label','Bit s vahou '+p);
+    el.innerHTML=`<span class="d">0</span><span class="p">${p}</span>`;
+    el.onclick=()=>{b[i]=b[i]?0:1;paint();};
+    row.appendChild(el);
+  });
+  function paint(){
+    const v=b.reduce((s,x,i)=>s+(x?P[i]:0),0);
+    [...row.children].forEach((el,i)=>{
+      el.classList.toggle('on',!!b[i]);
+      el.setAttribute('aria-pressed',b[i]?'true':'false');
+      $(el,'.d').textContent=b[i];
+    });
+    R('bin').textContent=b.join('');
+    R('dec').textContent=v;
+    R('hex').textContent='0x'+v.toString(16).toUpperCase().padStart(2,'0');
+    const c=(v>=33&&v<=126)?String.fromCharCode(v):(v===32?'mezera':'netisknutelný');
+    R('chr').textContent=c; R('chr').classList.toggle('sm',c.length>2);
+  }
+  $$(h,'[data-s]').forEach(x=>x.onclick=()=>{const n=+x.dataset.s;for(let i=0;i<8;i++)b[i]=(n>>(7-i))&1;paint();});
+  paint();
+};
+
+/* ── 2. PŘEVOD DO DVOJKOVÉ ────────────────────────── */
+WIDGETS.convert=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Desítkové číslo</label><input type="number" min="0" max="1048575" value="13"></div>
+      <button class="btn btn-p">Rozepsat</button>
+    </div>
+    <div class="log-box"><div class="empty">Zadejte číslo a klikněte na Rozepsat.</div></div>
+    <div class="res" style="display:none"></div>`;
+  const inp=$(h,'input'), box=$(h,'.log-box'), res=$(h,'.res');
+  function go(){
+    let n=parseInt(inp.value,10);
+    if(isNaN(n)||n<0){box.innerHTML='<div class="empty">Zadejte celé nezáporné číslo.</div>';res.style.display='none';return;}
+    if(n>1048575)n=1048575;
+    box.innerHTML=''; let cur=n;
+    if(cur===0) logLine(box,'0 ÷ 2 = 0','zbytek 0');
+    while(cur>0){const q=Math.floor(cur/2);logLine(box,cur+' ÷ 2 = '+q,'zbytek '+(cur%2));cur=q;}
+    logLine(box,'zbytky čteme odspodu nahoru','','info');
+    res.style.display='block';
+    res.textContent=n+'₁₀ = '+n.toString(2)+'₂   (hex '+n.toString(16).toUpperCase()+')';
+  }
+  $(h,'.btn').onclick=go;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
+};
+
+/* ── 3. KAPACITA DISKU ────────────────────────────── */
+WIDGETS.capacity=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Podle výrobce</label><input type="number" min="1" max="100000" value="1"></div>
+      <div class="fld"><label>Jednotka</label><select>
+        <option value="12">TB</option><option value="9" selected>GB</option><option value="6">MB</option></select></div>
+    </div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Bajtů</div><div class="rd-v sm" data-r="b">—</div></div>
+      <div class="rd-c"><div class="rd-k">Zobrazí systém</div><div class="rd-v sm" data-r="r">—</div></div>
+      <div class="rd-c"><div class="rd-k">Zdánlivý rozdíl</div><div class="rd-v sm" data-r="d">—</div></div>
+    </div>
+    <div class="status-bar" data-r="n"></div>`;
+  const inp=$(h,'input'), sel=$(h,'select'), R=n=>$(h,`[data-r="${n}"]`);
+  const N={12:['TiB',Math.pow(1024,4)],9:['GiB',Math.pow(1024,3)],6:['MiB',Math.pow(1024,2)]};
+  function calc(){
+    const v=parseFloat(inp.value), e=+sel.value;
+    if(isNaN(v)||v<=0){R('b').textContent=R('r').textContent=R('d').textContent='—';return;}
+    const bytes=v*Math.pow(10,e), [u,div]=N[e], real=bytes/div;
+    R('b').textContent=bytes.toLocaleString('cs-CZ');
+    R('r').textContent=real.toFixed(2).replace('.',',')+' '+u;
+    R('d').textContent=(100-(real/v*100)).toFixed(1).replace('.',',')+' %';
+    R('n').innerHTML=`<strong>Nikdo nekrade.</strong> Výrobce počítá ×1000, systém ×1024 — a přitom to popisuje stejnou zkratkou.`;
+  }
+  inp.oninput=calc; sel.onchange=calc; calc();
+};
+
+/* ── 4. DOPLŇKOVÝ KÓD ─────────────────────────────── */
+WIDGETS.twos=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Číslo (−128 až 127)</label><input type="number" min="-128" max="127" value="-5"></div>
+      <button class="btn btn-p">Zakódovat</button>
+    </div><div class="out"><div class="empty">Zadejte číslo a klikněte na Zakódovat.</div></div>`;
+  const inp=$(h,'input'), out=$(h,'.out');
+  const bin=v=>v.toString(2).padStart(8,'0').split('');
+  function stage(lbl,dig,cls){
+    const s=document.createElement('div'); s.className='stage';
+    s.innerHTML=`<div class="stage-l">${lbl}</div>`;
+    const r=document.createElement('div'); r.className='brow-c';
+    dig.forEach((d,i)=>{
+      const c=document.createElement('div');
+      c.className='bc'+(cls==='flip'?' flip':'')+(cls==='final'&&i===0?' sign':'');
+      c.textContent=d; r.appendChild(c);
+    });
+    s.appendChild(r); out.appendChild(s);
+  }
+  function go(){
+    const n=parseInt(inp.value,10);
+    if(isNaN(n)||n<-128||n>127){out.innerHTML='<div class="empty">Zadejte celé číslo od −128 do 127.</div>';return;}
+    out.innerHTML='';
+    if(n>=0){
+      stage('Kladné číslo se zapíše přímo',bin(n),'final');
+      const r=document.createElement('div');r.className='res';r.textContent=n+' → '+bin(n).join('');out.appendChild(r);
+      return;
+    }
+    const abs=Math.abs(n);
+    stage('1. Absolutní hodnota '+abs+' dvojkově',bin(abs));
+    const neg=bin(abs).map(d=>d==='1'?'0':'1');
+    stage('2. Negace všech bitů',neg,'flip');
+    const fin=bin((parseInt(neg.join(''),2)+1)&255);
+    stage('3. Přičtení jedničky',fin,'final');
+    const r=document.createElement('div');r.className='res';
+    r.textContent=n+' → '+fin.join('')+'   (první bit 1 = záporné)';
+    out.appendChild(r);
+  }
+  $(h,'.btn').onclick=go;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
+};
+
+/* ── 5. PŘETEČENÍ ─────────────────────────────────── */
+WIDGETS.overflow=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Šířka registru</label><select data-i="w">
+        <option value="4">4 bity</option><option value="8" selected>8 bitů</option><option value="16">16 bitů</option></select></div>
+      <div class="fld"><label>Výklad</label><select data-i="s">
+        <option value="u" selected>bez znaménka</option><option value="s">se znaménkem</option></select></div>
+    </div>
+    <div class="brow">
+      <button class="btn btn-p" data-c="i1">+ 1</button>
+      <button class="btn btn-g" data-c="i50">+ 50</button>
+      <button class="btn btn-g" data-c="max">Na maximum</button>
+      <button class="btn btn-d" data-c="zero">Vynulovat</button>
+    </div>
+    <div class="brow-c" data-r="bits" style="margin-bottom:.75rem"></div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Hodnota</div><div class="rd-v" data-r="v">0</div></div>
+      <div class="rd-c"><div class="rd-k">Rozsah</div><div class="rd-v sm" data-r="rg">—</div></div>
+      <div class="rd-c"><div class="rd-k">Přetečení</div><div class="rd-v" data-r="o">0</div></div>
+    </div>
+    <div class="status-bar" data-r="n">Přičítejte a sledujte, co se stane, až se hodnota do registru přestane vejít.</div>`;
+  const g=n=>$(h,`[data-i="${n}"]`), R=n=>$(h,`[data-r="${n}"]`);
+  let raw=0,ovf=0;
+  const W=()=>+g('w').value;
+  function paint(msg,flash){
+    const w=W(), signed=g('s').value==='s', mask=Math.pow(2,w)-1;
+    raw&=mask;
+    const bits=raw.toString(2).padStart(w,'0').split('');
+    R('bits').innerHTML='';
+    bits.forEach((d,i)=>{
+      const c=document.createElement('div');
+      c.className='bc'+(flash?' flip':'')+(signed&&i===0&&d==='1'?' sign':'');
+      c.textContent=d; R('bits').appendChild(c);
+    });
+    let v=raw; if(signed&&raw>=Math.pow(2,w-1)) v=raw-Math.pow(2,w);
+    R('v').textContent=v;
+    R('rg').textContent=signed?(-Math.pow(2,w-1))+' … '+(Math.pow(2,w-1)-1):'0 … '+mask;
+    R('o').textContent=ovf;
+    if(msg) R('n').innerHTML=msg;
+  }
+  function add(n){
+    const w=W(), mask=Math.pow(2,w)-1, before=raw;
+    raw+=n;
+    if(raw>mask){
+      ovf++; raw&=mask;
+      paint(`<strong>Přeteklo.</strong> Hodnota se do ${w} bitů nevešla, přebytečné bity zmizely a čítač se překlopil. Procesor přitom nehlásí chybu — počítá dál se špatným číslem.`,true);
+      setTimeout(()=>paint(),700);
+    } else { raw&=mask; paint(before===raw?null:''); }
+  }
+  $(h,'[data-c="i1"]').onclick=()=>add(1);
+  $(h,'[data-c="i50"]').onclick=()=>add(50);
+  $(h,'[data-c="max"]').onclick=()=>{raw=Math.pow(2,W())-1;paint('Registr je plný. Další přičtení jedničky ho překlopí na nulu.');};
+  $(h,'[data-c="zero"]').onclick=()=>{raw=0;ovf=0;paint('Vynulováno.');};
+  ['w','s'].forEach(n=>g(n).onchange=()=>{raw=0;ovf=0;paint('');});
+  paint();
+};
+
+/* ── 6. STAHOVÁNÍ ─────────────────────────────────── */
+WIDGETS.download=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Soubor (GB)</label><input type="number" min="0.01" step="0.5" value="10" data-i="s"></div>
+      <div class="fld"><label>Linka (Mb/s)</label><input type="number" min="1" step="10" value="50" data-i="v"></div>
+    </div>
+    <div class="log-box"></div><div class="res"></div>`;
+  const g=n=>$(h,`[data-i="${n}"]`), box=$(h,'.log-box'), res=$(h,'.res');
+  function calc(){
+    const s=parseFloat(g('s').value), v=parseFloat(g('v').value);
+    if(isNaN(s)||isNaN(v)||s<=0||v<=0){box.innerHTML='<div class="empty">Zadejte kladné hodnoty.</div>';res.textContent='';return;}
+    const mb=s*8000, sec=mb/v;
+    box.innerHTML='';
+    logLine(box,'Velikost souboru',s.toLocaleString('cs-CZ')+' GB');
+    logLine(box,'Převod na bity (× 8000)',Math.round(mb).toLocaleString('cs-CZ')+' Mb');
+    logLine(box,'Dělení rychlostí linky','÷ '+v+' Mb/s');
+    res.textContent='Přibližně '+fmtTime(sec);
+  }
+  ['s','v'].forEach(n=>g(n).oninput=calc); calc();
+};
+
+/* ── 7. ARCHITEKTURA — CANVASOVÁ SIMULACE ─────────── */
+WIDGETS.arch=function(h){
+  h.innerHTML=`<div class="pills">
+      <button class="pill on" data-a="vn">Von Neumann</button>
+      <button class="pill" data-a="hv">Harvard</button>
+    </div>
+    <div class="status-bar" data-r="st">Vyberte přenos a sledujte, jak putuje po sběrnici.</div>
+    <div class="brow">
+      <button class="btn btn-p" data-c="cycle">Spustit celý cyklus ▶</button>
+      <button class="btn btn-g" data-c="fetch">Načíst instrukci</button>
+      <button class="btn btn-g" data-c="read">Přečíst data</button>
+      <button class="btn btn-g" data-c="write">Zapsat data</button>
+    </div>
+    <div class="log-box" data-r="log"></div>
+    <div class="cvs-wrap"><canvas width="560" height="260"></canvas>
+      <div class="cvs-hint">Zelený paket = instrukce (jen z paměti do procesoru) · modrý = data (oběma směry)</div></div>
+    <div class="hl hl-blue" data-r="alt" style="margin-bottom:0"></div>`;
+
+  const cv=$(h,'canvas'), ctx=cv.getContext('2d');
+  const R=n=>$(h,`[data-r="${n}"]`);
+  let mode='vn', pkts=[], anim=null, queue=[], busy=false;
+
+  const C={blue:'#1a56db',green:'#16a34a',border:'#bfdbfe',bg:'#eff6ff',
+           text:'#111827',sec:'#6b7280',line:'#dbeafe'};
+
+  function box(x,y,w,hh,label,sub,accent){
+    ctx.fillStyle=accent?'#f0fdf4':C.bg;
+    ctx.strokeStyle=accent?C.green:C.blue;
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.roundRect(x,y,w,hh,8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=accent?'#14532d':'#1e40af';
+    ctx.font='700 14px Inter,sans-serif'; ctx.textAlign='center';
+    ctx.fillText(label,x+w/2,y+hh/2-(sub?4:-5));
+    if(sub){ctx.fillStyle=C.sec;ctx.font='11px Inter,sans-serif';ctx.fillText(sub,x+w/2,y+hh/2+13);}
+  }
+  function bus(x1,y,x2,label){
+    ctx.strokeStyle='#c7d7ea'; ctx.lineWidth=8; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
+    ctx.fillStyle=C.sec; ctx.font='600 9.5px Inter,sans-serif'; ctx.textAlign='center';
+    ctx.fillText(label,(x1+x2)/2,y+22);
+  }
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    box(35,95,140,80,'Procesor','řadič + ALU');
+    if(mode==='vn'){
+      bus(185,135,405,'SPOLEČNÁ SBĚRNICE — OBOUSMĚRNÁ');
+      box(415,95,140,80,'Paměť','program i data',true);
+    } else {
+      bus(185,72,405,'SBĚRNICE INSTRUKCÍ — JEDNOSMĚRNÁ');
+      bus(185,198,405,'SBĚRNICE DAT — OBOUSMĚRNÁ');
+      box(415,38,140,66,'Paměť','program',true);
+      box(415,164,140,66,'Paměť','data',true);
+    }
+    pkts.forEach(p=>{
+      const x=p.from+(p.to-p.from)*p.t;
+      ctx.beginPath(); ctx.arc(x,p.y,8,0,Math.PI*2);
+      ctx.fillStyle=p.kind==='i'?C.green:C.blue; ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    });
+  }
+  const ALT={
+    vn:`${hlIcon('info')}<div><strong>Co simulace ukazuje:</strong> instrukce i data jedou po jedné sběrnici, takže se musí střídat. Načtení instrukce, čtení dat a zápis dat nikdy neproběhnou zároveň — tomu se říká von Neumannovo úzké hrdlo.</div>`,
+    hv:`${hlIcon('info')}<div><strong>Co simulace ukazuje:</strong> každý přenos má vlastní cestu, takže instrukce se načítá zároveň s přenosem dat. Zelený paket jede vždy jen z paměti do procesoru, modrý oběma směry — procesor data čte i zapisuje.</div>`
+  };
+
+  function spawn(kind,dir){
+    const y = mode==='vn' ? 135 : (kind==='i'?72:198);
+    const a=195,b=395;
+    pkts.push({kind,y,from:dir==='in'?b:a,to:dir==='in'?a:b,t:0});
+  }
+  function run(){
+    if(anim) return;
+    const step=()=>{
+      let alive=false;
+      pkts.forEach(p=>{p.t=Math.min(1,p.t+0.022);if(p.t<1)alive=true;});
+      draw();
+      if(alive){anim=requestAnimationFrame(step);}
+      else{pkts=[];anim=null;draw();busy=false;nextInQueue();}
+    };
+    anim=requestAnimationFrame(step);
+  }
+  const ACTS={
+    fetch:{kind:'i',dir:'in',t:'Načtení instrukce',d:'z paměti do procesoru'},
+    read:{kind:'d',dir:'in',t:'Čtení dat',d:'z paměti do procesoru'},
+    write:{kind:'d',dir:'out',t:'Zápis dat',d:'z procesoru do paměti'}
+  };
+  function fire(name,parallelWith){
+    const a=ACTS[name];
+    R('st').innerHTML=`<strong>${a.t}</strong> — ${a.d}`;
+    logLine(R('log'),a.t,a.d,a.kind==='i'?'ok':'info');
+    spawn(a.kind,a.dir);
+    if(parallelWith){
+      const p=ACTS[parallelWith];
+      logLine(R('log'),p.t+' (souběžně)',p.d,'info');
+      spawn(p.kind,p.dir);
+    }
+    busy=true; run();
+  }
+  function nextInQueue(){
+    if(!queue.length) return;
+    const item=queue.shift();
+    fire(item[0],item[1]);
+  }
+  function act(name){
+    if(busy) return;
+    queue=[]; fire(name);
+  }
+  $(h,'[data-c="fetch"]').onclick=()=>act('fetch');
+  $(h,'[data-c="read"]').onclick=()=>act('read');
+  $(h,'[data-c="write"]').onclick=()=>act('write');
+  $(h,'[data-c="cycle"]').onclick=()=>{
+    if(busy) return;
+    R('log').innerHTML='';
+    if(mode==='vn'){
+      queue=[['read'],['write']];
+      logLine(R('log'),'Cyklus na společné sběrnici','tři přenosy za sebou','warn');
+      fire('fetch');
+    } else {
+      queue=[['read']];
+      logLine(R('log'),'Cyklus na oddělených sběrnicích','instrukce a data zároveň','ok');
+      fire('fetch','write');
+    }
+  };
+  $$(h,'[data-a]').forEach(b=>b.onclick=()=>{
+    if(anim){cancelAnimationFrame(anim);anim=null;}
+    busy=false;
+    mode=b.dataset.a;
+    $$(h,'[data-a]').forEach(x=>x.classList.toggle('on',x===b));
+    pkts=[];queue=[];R('log').innerHTML='';
+    R('alt').innerHTML=ALT[mode];
+    R('st').innerHTML=mode==='vn'
+      ? 'Jedna sběrnice pro všechno. Přenosy se musí střídat.'
+      : 'Dvě sběrnice. Instrukce a data mohou jet zároveň.';
+    draw();
+  });
+  R('alt').innerHTML=ALT.vn;
+  if(!ctx.roundRect){ctx.roundRect=function(x,y,w,hh,r){this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+hh,r);this.arcTo(x+w,y+hh,x,y+hh,r);this.arcTo(x,y+hh,x,y,r);this.arcTo(x,y,x+w,y,r);};}
+  draw();
+};
+
+/* ── 8. INSTRUKČNÍ CYKLUS ─────────────────────────── */
+WIDGETS.cycle=function(h){
+  const P=[
+   {n:'Krok 1',t:'Načtení',d:'Řadič si z paměti přečte instrukci, která leží na adrese uložené v čítači instrukcí. Adresa se pak posune na další instrukci.'},
+   {n:'Krok 2',t:'Dekódování',d:'Řadič rozpozná, o jakou operaci jde a jaké operandy k ní potřebuje. Podle toho připraví ostatní části procesoru.'},
+   {n:'Krok 3',t:'Provedení',d:'Aritmeticko-logická jednotka vykoná samotnou operaci — sečte, porovná, provede logickou funkci.'},
+   {n:'Krok 4',t:'Uložení',d:'Výsledek se zapíše do registru nebo do paměti. Cyklus začíná znovu od načtení další instrukce.'}
+  ];
+  h.innerHTML=`<div class="spills">${P.map(()=>'<div class="sp"></div>').join('')}</div>
+    <div class="expl-card"></div>
+    <div class="brow">
+      <button class="btn btn-p" data-c="next">Další krok →</button>
+      <button class="btn btn-g" data-c="play">Přehrát</button>
+      <button class="btn btn-g" data-c="reset">Od začátku</button>
+    </div>`;
+  let i=0,timer=null;
+  const pills=$$(h,'.sp'), card=$(h,'.expl-card'), play=$(h,'[data-c="play"]');
+  function paint(){
+    pills.forEach((p,k)=>{p.className='sp'+(k<i?' done':k===i?' on':'');});
+    card.innerHTML=`<div class="expl-num">${P[i].n} ze 4</div><div class="expl-title">${P[i].t}</div><div class="expl-desc">${P[i].d}</div>`;
+  }
+  function stop(){if(timer){clearInterval(timer);timer=null;play.textContent='Přehrát';}}
+  $(h,'[data-c="next"]').onclick=()=>{stop();i=(i+1)%P.length;paint();};
+  $(h,'[data-c="reset"]').onclick=()=>{stop();i=0;paint();};
+  play.onclick=()=>{
+    if(timer){stop();return;}
+    play.textContent='Zastavit';
+    timer=setInterval(()=>{i=(i+1)%P.length;paint();},1900);
+  };
+  paint();
+};
+
+/* ── 9. PCIe ──────────────────────────────────────── */
+WIDGETS.pcie=function(h){
+  const G=[['PCIe 1.0',0.250],['PCIe 2.0',0.500],['PCIe 3.0',0.985],['PCIe 4.0',1.969],['PCIe 5.0',3.938]];
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Generace</label><select data-i="g">
+        ${G.map(([n,v],i)=>`<option value="${v}"${i===3?' selected':''}>${n}</option>`).join('')}</select></div>
+      <div class="fld"><label>Počet linek</label><select data-i="l">
+        <option value="1">×1</option><option value="4" selected>×4</option>
+        <option value="8">×8</option><option value="16">×16</option></select></div>
+    </div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Propustnost</div><div class="rd-v sm" data-r="o">—</div></div>
+      <div class="rd-c"><div class="rd-k">Film 25 GB za</div><div class="rd-v sm" data-r="t">—</div></div>
+    </div>
+    <div class="bars"></div>`;
+  const g=n=>$(h,`[data-i="${n}"]`), R=n=>$(h,`[data-r="${n}"]`), bars=$(h,'.bars');
+  function calc(){
+    const per=parseFloat(g('g').value), l=+g('l').value, gbs=per*l, max=3.938*l;
+    R('o').textContent=gbs.toFixed(1).replace('.',',')+' GB/s';
+    R('t').textContent=fmtTime(25/gbs);
+    bars.innerHTML='';
+    G.forEach(([n,p])=>{
+      const v=p*l, row=document.createElement('div');
+      row.className='bar-r'+(Math.abs(p-per)<0.001?' hi':'');
+      row.innerHTML=`<div class="nm">${n}</div><div class="bar-t"><div class="bar-f"></div></div>`;
+      bars.appendChild(row);
+      requestAnimationFrame(()=>{
+        const f=$(row,'.bar-f');
+        f.style.width=Math.max(8,v/max*100)+'%';
+        f.textContent=v.toFixed(1).replace('.',',')+' GB/s';
+      });
+    });
+  }
+  ['g','l'].forEach(n=>g(n).onchange=calc); calc();
+};
+
+/* ── 10. SOUČÁSTI SESTAVY ─────────────────────────── */
+WIDGETS.parts=function(h){
+  const P=[
+   {n:'Základní deska',d:'Propojuje všechny součástky a rozvádí k nim napájení i data. Určuje, jaký procesor a kolik paměti do sestavy půjde.',m:'Formáty: ATX · microATX · Mini-ITX'},
+   {n:'Procesor',d:'Vykonává instrukce programu. Skládá se z jader, každé zvládne vlastní vlákno práce, a z rychlé vyrovnávací paměti cache.',m:'Počet jader · frekvence · cache · TDP'},
+   {n:'Operační paměť',d:'Drží data a programy, se kterými se právě pracuje. Po vypnutí je prázdná.',m:'Dnes DDR4 a DDR5 · 8 až 64 GB'},
+   {n:'Disk',d:'Uchovává data trvale. Pevný disk má rotující plotny a hlavičku, SSD je čistě elektronické a řádově rychlejší.',m:'HDD ~150 MB/s · SATA SSD ~550 · NVMe až 7000'},
+   {n:'Grafická karta',d:'Počítá obraz. Má vlastní čip a vlastní rychlou paměť; k desce se připojuje přes PCIe.',m:'Paměť GDDR6 nebo GDDR7'},
+   {n:'Napájecí zdroj',d:'Mění střídavé napětí ze zásuvky na stejnosměrné a rozvádí ho konektory k desce, disku i grafické kartě.',m:'Výkon 350 až 1000 W podle sestavy'}
+  ];
+  h.innerHTML=`<div class="pills"></div><div class="expl-card"></div>`;
+  const pl=$(h,'.pills'), card=$(h,'.expl-card');
+  let cur=0;
+  P.forEach((p,i)=>{
+    const b=document.createElement('button'); b.className='pill'; b.type='button'; b.textContent=p.n;
+    b.onclick=()=>{cur=i;paint();}; pl.appendChild(b);
+  });
+  function paint(){
+    [...pl.children].forEach((b,i)=>b.classList.toggle('on',i===cur));
+    card.innerHTML=`<div class="expl-title">${P[cur].n}</div><div class="expl-desc">${P[cur].d}</div>
+      <div class="expl-num" style="margin-top:7px">${P[cur].m}</div>`;
+  }
+  paint();
+};
+
+/* ── 11. ZDROJ ────────────────────────────────────── */
+WIDGETS.psu=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Procesor</label><select data-i="c">
+        <option value="45">úsporný 45 W</option><option value="65" selected>běžný 65 W</option>
+        <option value="125">výkonný 125 W</option><option value="250">nejvyšší 250 W</option></select></div>
+      <div class="fld"><label>Grafika</label><select data-i="g">
+        <option value="0">integrovaná</option><option value="75">základní 75 W</option>
+        <option value="200" selected>střední 200 W</option><option value="450">high-end 450 W</option></select></div>
+      <div class="fld"><label>Disky</label><select data-i="d">
+        <option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+    </div>
+    <div class="log-box"></div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Spotřeba</div><div class="rd-v" data-r="w">—</div></div>
+      <div class="rd-c"><div class="rd-k">Doporučený zdroj</div><div class="rd-v" data-r="r">—</div></div>
+    </div>
+    <div class="status-bar"><strong>Rezerva se počítá zhruba 40 %.</strong> Zdroj pracuje nejúsporněji zatížený asi na polovinu a součástky při krátkých špičkách odeberou víc, než mají v katalogu.</div>`;
+  const g=n=>$(h,`[data-i="${n}"]`), R=n=>$(h,`[data-r="${n}"]`), box=$(h,'.log-box');
+  function calc(){
+    const c=+g('c').value, gp=+g('g').value, d=+g('d').value, base=60;
+    const tot=c+gp+d*8+base, rec=Math.ceil(tot*1.4/50)*50;
+    box.innerHTML='';
+    logLine(box,'Procesor',c+' W');
+    logLine(box,'Grafická karta',gp+' W');
+    logLine(box,'Disky ('+d+' × 8 W)',(d*8)+' W');
+    logLine(box,'Deska, paměť, ventilátory',base+' W');
+    logLine(box,'Celkem + rezerva 40 %',rec+' W','ok');
+    R('w').textContent=tot+' W'; R('r').textContent=rec+' W';
+  }
+  ['c','g','d'].forEach(n=>g(n).onchange=calc); calc();
+};
+
+/* ── 12. ROZHRANÍ ─────────────────────────────────── */
+WIDGETS.iface=function(h){
+  const IF=[['USB 2.0',60],['USB 3.0',625],['USB 3.2 Gen2',1250],['USB4',5000],
+            ['SATA I',150],['SATA II',300],['SATA III',600],['NVMe PCIe 4.0 ×4',7900]];
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Soubor (GB)</label><input type="number" min="0.1" step="1" value="8"></div>
+      <div class="fld"><label>Rozhraní</label><select>
+        ${IF.map(([n,v],i)=>`<option value="${v}"${i===6?' selected':''}>${n}</option>`).join('')}</select></div>
+    </div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Propustnost</div><div class="rd-v sm" data-r="s">—</div></div>
+      <div class="rd-c"><div class="rd-k">Přenos potrvá</div><div class="rd-v sm" data-r="t">—</div></div>
+    </div>
+    <div class="bars"></div>`;
+  const inp=$(h,'input'), sel=$(h,'select'), R=n=>$(h,`[data-r="${n}"]`), bars=$(h,'.bars');
+  function calc(){
+    const gb=parseFloat(inp.value), mbs=parseFloat(sel.value);
+    if(isNaN(gb)||gb<=0){R('s').textContent=R('t').textContent='—';return;}
+    R('s').textContent=mbs>=1000?(mbs/1000).toFixed(1).replace('.',',')+' GB/s':mbs+' MB/s';
+    R('t').textContent=fmtTime(gb*1000/mbs);
+    bars.innerHTML='';
+    IF.forEach(([n,v])=>{
+      const row=document.createElement('div');
+      row.className='bar-r'+(Math.abs(v-mbs)<0.5?' hi':'');
+      row.innerHTML=`<div class="nm">${n}</div><div class="bar-t"><div class="bar-f"></div></div>`;
+      bars.appendChild(row);
+      requestAnimationFrame(()=>{
+        const f=$(row,'.bar-f');
+        f.style.width=Math.max(7,v/7900*100)+'%';
+        f.textContent=fmtTime(gb*1000/v);
+      });
+    });
+  }
+  inp.oninput=calc; sel.onchange=calc; calc();
+};
+
+/* ── 13. PYRAMIDA PAMĚTÍ ──────────────────────────── */
+WIDGETS.pyramid=function(h){
+  const L=[
+   {n:'Registry',w:34,d:'Přímo v jádře procesoru. Přístup trvá jediný takt.',m:'jednotky bajtů · pod 1 ns'},
+   {n:'Cache L1',w:44,d:'Nejrychlejší vyrovnávací paměť, oddělená pro instrukce a pro data.',m:'desítky KiB · ~1 ns'},
+   {n:'Cache L2',w:56,d:'Větší a o něco pomalejší, obvykle vlastní pro každé jádro.',m:'stovky KiB · ~4 ns'},
+   {n:'Cache L3',w:68,d:'Sdílená všemi jádry procesoru.',m:'jednotky až desítky MiB · ~15 ns'},
+   {n:'Operační paměť',w:82,d:'Hlavní pracovní prostor. Po vypnutí je prázdná.',m:'jednotky až desítky GiB · ~80 ns'},
+   {n:'SSD',w:92,d:'Trvalé úložiště bez pohyblivých částí.',m:'stovky GB až TB · ~50 µs'},
+   {n:'Pevný disk',w:100,d:'Rotující plotny a pohyblivá hlavička. Nejlevnější za gigabajt, ale nejpomalejší.',m:'jednotky TB · ~8 ms'}
+  ];
+  h.innerHTML=`<div class="pyr-ax"><span>↑ rychlejší a dražší</span><span>větší ↓</span></div>
+    <div class="pyr"></div><div class="expl-card"></div>`;
+  const pyr=$(h,'.pyr'), card=$(h,'.expl-card');
+  let cur=1;
+  L.forEach((l,i)=>{
+    const b=document.createElement('button'); b.className='pyr-l'; b.type='button';
+    b.style.width=l.w+'%'; b.textContent=l.n;
+    b.onclick=()=>{cur=i;paint();}; pyr.appendChild(b);
+  });
+  function paint(){
+    [...pyr.children].forEach((b,i)=>b.classList.toggle('on',i===cur));
+    card.innerHTML=`<div class="expl-title">${L[cur].n}</div><div class="expl-desc">${L[cur].d}</div>
+      <div class="expl-num" style="margin-top:7px">${L[cur].m}</div>`;
+  }
+  paint();
+};
+
+/* ── 14. TŘÍDĚNÍ PERIFERIÍ ────────────────────────── */
+WIDGETS.sortgame=function(h){
+  const DEV=[
+   {n:'Klávesnice',g:'in'},{n:'Monitor',g:'out'},{n:'Dotykový displej',g:'io'},
+   {n:'Skener',g:'in'},{n:'Tiskárna',g:'out'},{n:'Flash disk',g:'io'},
+   {n:'Myš',g:'in'},{n:'Reproduktory',g:'out'},{n:'Multifunkční tiskárna',g:'io'},
+   {n:'Mikrofon',g:'in'},{n:'Projektor',g:'out'},{n:'Herní ovladač s vibracemi',g:'io'}
+  ];
+  const NM={in:'vstupní',out:'výstupní',io:'vstupně-výstupní'};
+  h.innerHTML=`<div class="expl-card" style="text-align:center;min-height:auto" data-r="p"></div>
+    <div class="brow" style="justify-content:center;margin-top:.75rem">
+      <button class="btn btn-g" data-g="in">Vstupní</button>
+      <button class="btn btn-g" data-g="out">Výstupní</button>
+      <button class="btn btn-g" data-g="io">Vstupně-výstupní</button>
+    </div>
+    <div class="status-bar" data-r="f">Postupně projdete dvanáct zařízení.</div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Správně</div><div class="rd-v" data-r="ok">0</div></div>
+      <div class="rd-c"><div class="rd-k">Zbývá</div><div class="rd-v" data-r="l">12</div></div>
+    </div>
+    <div class="brow"><button class="btn btn-d btn-s" data-c="r">Od začátku</button></div>`;
+  const R=n=>$(h,`[data-r="${n}"]`);
+  let ord=[],i=0,ok=0;
+  function sh(){ord=DEV.map((_,k)=>k);for(let k=ord.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[ord[k],ord[j]]=[ord[j],ord[k]];}}
+  function paint(){
+    if(i>=ord.length){
+      R('p').innerHTML=`<div class="expl-title">Hotovo</div><div class="expl-desc">Zvládli jste ${ok} z ${ord.length} zařízení.</div>`;
+      $$(h,'[data-g]').forEach(b=>b.disabled=true); R('l').textContent='0'; return;
+    }
+    R('p').innerHTML=`<div class="expl-num">Zařízení ${i+1} z ${ord.length}</div><div class="expl-title">${DEV[ord[i]].n}</div><div class="expl-desc">Kam patří?</div>`;
+    R('l').textContent=ord.length-i;
+  }
+  function ans(g){
+    if(i>=ord.length) return;
+    const d=DEV[ord[i]];
+    if(d.g===g){ok++;R('ok').textContent=ok;R('f').innerHTML=`<strong>Správně.</strong> ${d.n} je ${NM[d.g]} zařízení.`;}
+    else{R('f').innerHTML=`<strong>Ještě ne.</strong> ${d.n} je ${NM[d.g]} zařízení, ne ${NM[g]}.`;}
+    i++;paint();
+  }
+  $$(h,'[data-g]').forEach(b=>b.onclick=()=>ans(b.dataset.g));
+  $(h,'[data-c="r"]').onclick=()=>{sh();i=0;ok=0;R('ok').textContent='0';
+    $$(h,'[data-g]').forEach(b=>b.disabled=false);
+    R('f').textContent='Postupně projdete dvanáct zařízení.';paint();};
+  sh();paint();
+};
+
+/* ── 15. DPI ──────────────────────────────────────── */
+WIDGETS.dpi=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Šířka (px)</label><input type="number" min="100" step="100" value="4000" data-i="w"></div>
+      <div class="fld"><label>Výška (px)</label><input type="number" min="100" step="100" value="3000" data-i="h"></div>
+      <div class="fld"><label>Kvalita tisku</label><select data-i="d">
+        <option value="150">150 DPI — plakát</option><option value="300" selected>300 DPI — fotografie</option>
+        <option value="600">600 DPI — jemný tisk</option></select></div>
+    </div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Velikost výtisku</div><div class="rd-v sm" data-r="s">—</div></div>
+      <div class="rd-c"><div class="rd-k">Bodů celkem</div><div class="rd-v sm" data-r="m">—</div></div>
+    </div>
+    <div class="status-bar" data-r="n"></div>`;
+  const g=n=>$(h,`[data-i="${n}"]`), R=n=>$(h,`[data-r="${n}"]`);
+  function calc(){
+    const w=+g('w').value, hh=+g('h').value, d=+g('d').value;
+    if(!w||!hh){R('s').textContent=R('m').textContent='—';return;}
+    const cw=w/d*2.54, chh=hh/d*2.54;
+    R('s').textContent=cw.toFixed(1).replace('.',',')+' × '+chh.toFixed(1).replace('.',',')+' cm';
+    R('m').textContent=(w*hh/1e6).toFixed(1).replace('.',',')+' Mpx';
+    const a4=(cw>=21&&chh>=29.7)||(cw>=29.7&&chh>=21);
+    R('n').innerHTML=a4
+      ? '<strong>Na formát A4 to bohatě stačí.</strong> Fotografie má dost bodů i na větší výtisk.'
+      : 'Na formát A4 (21 × 29,7 cm) by tahle fotografie při zvolené kvalitě nestačila — musela by se zvětšit a ztratila by ostrost.';
+  }
+  ['w','h'].forEach(n=>g(n).oninput=calc); g('d').onchange=calc; calc();
+};
+
+/* ── 16. x86 vs ARM ───────────────────────────────── */
+WIDGETS.arm=function(h){
+  const D={
+   x86:[['Instrukční sada','stovky složitých instrukcí (CISC)'],
+        ['Spotřeba','desítky až stovky wattů'],
+        ['Chlazení','aktivní — ventilátor nebo vodní okruh'],
+        ['Použití','stolní počítače, notebooky, servery'],
+        ['Silná stránka','vysoký výkon a zpětná kompatibilita']],
+   arm:[['Instrukční sada','desítky jednoduchých instrukcí (RISC)'],
+        ['Spotřeba','zlomky wattu až jednotky wattů'],
+        ['Chlazení','většinou pasivní, bez ventilátoru'],
+        ['Použití','telefony, tablety, čtečky, nově i notebooky'],
+        ['Silná stránka','poměr výkonu ke spotřebě']]
+  };
+  h.innerHTML=`<div class="pills">
+      <button class="pill on" data-x="x86">x86</button>
+      <button class="pill" data-x="arm">ARM</button>
+    </div><div class="log-box" style="max-height:none"></div>`;
+  const box=$(h,'.log-box');
+  function paint(k){
+    box.innerHTML='';
+    D[k].forEach(r=>logLine(box,r[0],r[1],k==='arm'?'ok':'info'));
+  }
+  $$(h,'[data-x]').forEach(b=>b.onclick=()=>{
+    $$(h,'[data-x]').forEach(x=>x.classList.toggle('on',x===b));
+    paint(b.dataset.x);
+  });
+  paint('x86');
+};
+
+/* ── 17. VRSTVY OS ────────────────────────────────── */
+WIDGETS.layers=function(h){
+  const L=[
+   {n:'Aplikace',d:'Programy, se kterými pracuje uživatel. O hardware se nestarají, volají služby systému.',m:'prohlížeč · editor · hra'},
+   {n:'Uživatelské rozhraní',d:'Grafické prostředí nebo příkazový řádek. Zprostředkovává ovládání systému.',m:'GUI · CLI'},
+   {n:'Systémové služby',d:'Správa procesů, paměti, souborů a vstupně-výstupních operací.',m:'plánovač · správce paměti · souborový systém'},
+   {n:'Jádro (kernel)',d:'Nejdůležitější část systému. Běží trvale a jako jediná má plný přístup k hardwaru.',m:'ovladače · přerušení · přepínání kontextu'},
+   {n:'Firmware BIOS/UEFI',d:'Oživí desku po zapnutí, provede test POST a předá řízení zavaděči systému.',m:'POST · bootloader · Secure Boot'},
+   {n:'Hardware',d:'Fyzické součástky. Rozumí jen elektrickým signálům.',m:'procesor · paměť · disky · periferie'}
+  ];
+  h.innerHTML=`<div class="pyr"></div><div class="expl-card"></div>`;
+  const pyr=$(h,'.pyr'), card=$(h,'.expl-card');
+  let cur=3;
+  L.forEach((l,i)=>{
+    const b=document.createElement('button'); b.className='pyr-l'; b.type='button';
+    b.style.width='100%'; b.textContent=l.n;
+    b.onclick=()=>{cur=i;paint();}; pyr.appendChild(b);
+  });
+  function paint(){
+    [...pyr.children].forEach((b,i)=>b.classList.toggle('on',i===cur));
+    card.innerHTML=`<div class="expl-title">${L[cur].n}</div><div class="expl-desc">${L[cur].d}</div>
+      <div class="expl-num" style="margin-top:7px">${L[cur].m}</div>`;
+  }
+  paint();
+};
+
+/* ── 18. PLÁNOVAČ PROCESŮ ─────────────────────────── */
+WIDGETS.scheduler=function(h){
+  const PROC=[{n:'Editor',need:6,c:'#16a34a'},{n:'Prohlížeč',need:8,c:'#1a56db'},{n:'Přehrávač',need:4,c:'#d97706'}];
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Časové kvantum</label><select data-i="q">
+        <option value="1">1 jednotka</option><option value="2" selected>2 jednotky</option><option value="4">4 jednotky</option></select></div>
+      <button class="btn btn-p" data-c="run">Spustit ▶</button>
+      <button class="btn btn-g" data-c="clr">Vymazat</button>
+    </div>
+    <div class="cvs-wrap" style="background:var(--white);padding:12px"><div class="g"></div></div>
+    <div class="status-bar" data-r="n">Tři procesy se dělí o jedno jádro. Plánovač jim střídavě přiděluje časové úseky.</div>`;
+  const g=$(h,'.g'), sel=$(h,'[data-i="q"]'), R=n=>$(h,`[data-r="${n}"]`);
+  let timer=null;
+  function clr(){
+    if(timer){clearInterval(timer);timer=null;}
+    g.innerHTML=PROC.map(p=>`<div style="display:grid;grid-template-columns:74px 1fr;gap:9px;align-items:center;margin-bottom:6px">
+      <div style="font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--sec);text-align:right">${p.n}</div>
+      <div class="tr" style="display:flex;gap:2px;height:20px"></div></div>`).join('');
+  }
+  $(h,'[data-c="run"]').onclick=()=>{
+    clr();
+    const q=+sel.value, left=PROC.map(p=>p.need), plan=[];
+    let guard=0;
+    while(left.some(v=>v>0)&&guard++<100){
+      for(let i=0;i<PROC.length;i++){
+        if(left[i]<=0) continue;
+        const take=Math.min(q,left[i]);
+        for(let k=0;k<take;k++) plan.push(i);
+        left[i]-=take;
+      }
+    }
+    const trs=$$(h,'.tr'); let t=0;
+    const sw=plan.filter((v,i)=>i>0&&v!==plan[i-1]).length;
+    timer=setInterval(()=>{
+      if(t>=plan.length){
+        clearInterval(timer);timer=null;
+        R('n').innerHTML=`<strong>Hotovo za ${plan.length} jednotek času.</strong> Procesor přepnul mezi procesy ${sw}×. Kratší kvantum působí plynuleji, ale každé přepnutí samo o sobě stojí čas.`;
+        return;
+      }
+      const who=plan[t];
+      trs.forEach((tr,i)=>{
+        const c=document.createElement('div');
+        c.style.cssText=`flex:1;border-radius:3px;background:${i===who?PROC[i].c:'#dbeafe'}`;
+        tr.appendChild(c);
+      });
+      t++;
+    },170);
+  };
+  $(h,'[data-c="clr"]').onclick=()=>{clr();R('n').textContent='Tři procesy se dělí o jedno jádro. Plánovač jim střídavě přiděluje časové úseky.';};
+  clr();
+};
+
+/* ── 19. BEZDRÁTOVÉ TECHNOLOGIE ───────────────────── */
+WIDGETS.wireless=function(h){
+  const T=[
+   {n:'AirPlay',d:'Řešení Apple. Obraz i zvuk putují přes společnou síť Wi-Fi na set-top box Apple TV připojený do HDMI.',m:'Apple · přes síť Wi-Fi · až 1080p'},
+   {n:'Intel WiDi',d:'Přímé spojení mezi notebookem a přijímačem, bez potřeby sítě. Vyžaduje procesor Intel a příslušný software.',m:'Windows · přímé spojení · obraz i zvuk 5.1'},
+   {n:'Miracast',d:'Otevřený standard od Wi-Fi Alliance. Tvoří přímé spojení, takže funguje i tam, kde není síť.',m:'Android 4.2+ · Windows 8.1+ · přímé spojení'},
+   {n:'Chromecast',d:'Adaptér do HDMI, který se připojí do sítě Wi-Fi a obsah umí načítat rovnou z internetu.',m:'multiplatformní · přes síť · streamování z cloudu'},
+   {n:'EzCast',d:'Aplikace zastřešující více technologií — Miracast, DLNA i AirPlay. Vyžaduje kompatibilní adaptér.',m:'Windows · Android · iOS · macOS'},
+   {n:'ShareLink',d:'Prezentační systém pro učebny. Zobrazí až čtyři zařízení současně a nabízí režim moderátora.',m:'až 4 zařízení najednou · režim moderátora'}
+  ];
+  h.innerHTML=`<div class="pills"></div><div class="expl-card"></div>`;
+  const pl=$(h,'.pills'), card=$(h,'.expl-card');
+  let cur=2;
+  T.forEach((t,i)=>{
+    const b=document.createElement('button'); b.className='pill'; b.type='button'; b.textContent=t.n;
+    b.onclick=()=>{cur=i;paint();}; pl.appendChild(b);
+  });
+  function paint(){
+    [...pl.children].forEach((b,i)=>b.classList.toggle('on',i===cur));
+    card.innerHTML=`<div class="expl-title">${T[cur].n}</div><div class="expl-desc">${T[cur].d}</div>
+      <div class="expl-num" style="margin-top:7px">${T[cur].m}</div>`;
+  }
+  paint();
+};
+
+/* ── 20. PRŮVODCE VÝBĚREM ─────────────────────────── */
+WIDGETS.wizard=function(h){
+  h.innerHTML=`<div class="fields">
+      <div class="fld"><label>Čím prezentujete</label><select data-i="s">
+        <option value="apple">iPad nebo MacBook</option>
+        <option value="win" selected>notebook s Windows</option>
+        <option value="android">telefon či tablet s Androidem</option>
+        <option value="mix">každý něčím jiným</option></select></div>
+      <div class="fld"><label>Zobrazovač</label><select data-i="d">
+        <option value="smart">Smart TV</option>
+        <option value="old" selected>starší projektor s HDMI</option>
+        <option value="new">projektor s Wi-Fi</option></select></div>
+    </div><div class="expl-card"></div>`;
+  const g=n=>$(h,`[data-i="${n}"]`), card=$(h,'.expl-card');
+  function calc(){
+    const s=g('s').value, d=g('d').value;
+    let t,x,m;
+    if(s==='mix'){t='ShareLink nebo EzCast';
+      x='Když do učebny chodí Windows, Android i zařízení Apple, vyplatí se multiplatformní řešení. ShareLink navíc zobrazí až čtyři zařízení najednou a dá vám kontrolu nad tím, čí obraz se promítne.';
+      m='pokryje všechny systémy · dražší pořízení';}
+    else if(s==='apple'){t='Apple TV s technologií AirPlay';
+      x='Pro zařízení Apple je to nejhladší cesta. Apple TV se zapojí do HDMI a obraz putuje přes společnou Wi-Fi, takže je potřeba fungující síť.';
+      m='vyžaduje Wi-Fi síť · zapojí se do HDMI';}
+    else if(s==='android'){t='Miracast';
+      x='Android od verze 4.2 Miracast podporuje. Spojení vzniká napřímo mezi telefonem a přijímačem, takže funguje i v učebně bez sítě.';
+      m='přímé spojení · bez potřeby Wi-Fi sítě';}
+    else{t='Miracast, případně Intel WiDi';
+      x='Windows od verze 8.1 mají Miracast zabudovaný. Pokud má notebook procesor Intel, funguje i WiDi. Obojí se spojuje napřímo.';
+      m='vestavěné ve Windows · přímé spojení';}
+    m += d==='old' ? ' · doplňte bezdrátový adaptér do HDMI'
+       : d==='smart' ? ' · Smart TV to často zvládne bez adaptéru'
+       : ' · projektor s Wi-Fi zvládne příjem sám';
+    card.innerHTML=`<div class="expl-num">Doporučení</div><div class="expl-title">${t}</div>
+      <div class="expl-desc">${x}</div><div class="expl-num" style="margin-top:7px">${m}</div>`;
+  }
+  ['s','d'].forEach(n=>g(n).onchange=calc); calc();
+};
+
+/* ── 21. PHISHING ─────────────────────────────────── */
+WIDGETS.phish=function(h){
+  const T={
+   from:'Adresa odesílatele nesedí. Skutečná banka nepíše z domény jako <code>ceska-sporitelna-overeni.info</code>.',
+   urg:'Naléhavý tón a hrozba během 24 hodin mají zabránit tomu, abyste si zprávu v klidu ověřili.',
+   link:'Text odkazu ukazuje jednu adresu, ale odkaz vede jinam. Adresu si vždy napište do prohlížeče ručně.',
+   ask:'Žádná banka po vás nechce heslo ani kód e-mailem. Kdo o ně žádá, není banka.',
+   greet:'Neosobní oslovení naznačuje hromadnou rozesílku. Banka zná vaše jméno.'
+  };
+  h.innerHTML=`<div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;font-size:13px;line-height:1.7">
+      <div style="color:var(--sec);font-size:12px;margin-bottom:9px;border-bottom:1px solid var(--border);padding-bottom:7px">
+        Od: <button class="tp" data-t="from">Česká spořitelna &lt;security@ceska-sporitelna-overeni.info&gt;</button><br>
+        Předmět: <button class="tp" data-t="urg">URGENTNÍ: Váš účet bude do 24 hodin zablokován</button>
+      </div>
+      <p style="margin-bottom:8px"><button class="tp" data-t="greet">Vážený kliente,</button></p>
+      <p style="margin-bottom:8px">zaznamenali jsme neobvyklou aktivitu na Vašem účtu. Z bezpečnostních důvodů jsme přístup dočasně omezili.</p>
+      <p style="margin-bottom:8px"><button class="tp" data-t="ask">Pro obnovení přístupu prosím potvrďte své přihlašovací jméno, heslo a kód z SMS.</button></p>
+      <p style="margin-bottom:8px">Ověření provedete zde: <button class="tp" data-t="link">www.csas.cz/overeni</button></p>
+      <p style="margin:0">S pozdravem, oddělení bezpečnosti</p>
+    </div>
+    <div class="status-bar" data-r="f" style="margin-top:.75rem">Ve zprávě se skrývá pět typických znaků phishingu. Klikněte na ně.</div>
+    <div class="rd"><div class="rd-c"><div class="rd-k">Nalezeno</div><div class="rd-v" data-r="n">0 / 5</div></div></div>`;
+  const found=new Set(), R=n=>$(h,`[data-r="${n}"]`);
+  $$(h,'.tp').forEach(el=>{
+    el.style.cssText='font:inherit;background:none;border:none;padding:0;color:inherit;text-align:left;cursor:pointer;border-bottom:2px dotted #bfdbfe;transition:all .2s';
+    el.onmouseover=()=>{if(!found.has(el.dataset.t))el.style.background='#eff6ff';};
+    el.onmouseout=()=>{if(!found.has(el.dataset.t))el.style.background='none';};
+    el.onclick=()=>{
+      const k=el.dataset.t;
+      if(found.has(k)) return;
+      found.add(k); el.disabled=true;
+      el.style.background='#fffbeb'; el.style.borderBottom='2px solid #d97706';
+      el.style.color='#78350f'; el.style.fontWeight='600';
+      R('n').textContent=found.size+' / 5';
+      R('f').innerHTML='<strong>Dobrý postřeh.</strong> '+T[k]+
+        (found.size===5?'<br><br><strong>Našli jste všech pět.</strong> Když zpráva splňuje aspoň dva z těchto znaků, neodpovídejte a obraťte se přímo na banku.':'');
+    };
+  });
+};
+
+/* ── 22. RLE ──────────────────────────────────────── */
+WIDGETS.rle=function(h){
+  h.innerHTML=`<div class="fld" style="width:100%;margin-bottom:.75rem">
+      <label>Vstupní text</label>
+      <textarea spellcheck="false" style="width:100%;font-family:ui-monospace,Consolas,monospace;font-size:13px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--r);min-height:60px;resize:vertical;line-height:1.5">AAAAABBBCCCCCCCDDEEEEEEEEEE</textarea>
+    </div>
+    <div class="brow">
+      <button class="btn btn-g btn-s" data-s="AAAAABBBCCCCCCCDDEEEEEEEEEE">Řada opakování</button>
+      <button class="btn btn-g btn-s" data-s="WWWWWWWWWWWWBBBWWWWWWWWWWWW">Řádek obrázku</button>
+      <button class="btn btn-g btn-s" data-s="architektura pocitacu">Běžný text</button>
+    </div>
+    <div class="res" data-r="o"></div>
+    <div class="rd">
+      <div class="rd-c"><div class="rd-k">Původní</div><div class="rd-v" data-r="a">—</div></div>
+      <div class="rd-c"><div class="rd-k">Po komprimaci</div><div class="rd-v" data-r="b">—</div></div>
+      <div class="rd-c"><div class="rd-k">Úspora</div><div class="rd-v" data-r="c">—</div></div>
+    </div>
+    <div class="status-bar" data-r="n"></div>`;
+  const ta=$(h,'textarea'), R=n=>$(h,`[data-r="${n}"]`);
+  const enc=s=>{let o='',i=0;while(i<s.length){let j=i;while(j<s.length&&s[j]===s[i])j++;o+=(j-i)+s[i];i=j;}return o;};
+  function calc(){
+    const s=ta.value;
+    if(!s){R('o').textContent='';R('a').textContent=R('b').textContent=R('c').textContent='—';return;}
+    const e=enc(s);
+    R('o').textContent=e; R('a').textContent=s.length; R('b').textContent=e.length;
+    const sv=Math.round((1-e.length/s.length)*100);
+    R('c').textContent=(sv>=0?'−':'+')+Math.abs(sv)+' %';
+    R('n').innerHTML=sv>0
+      ? `<strong>Úspora ${sv} %.</strong> Dlouhé řady stejných znaků se nahradily počtem a jedním zástupcem.`
+      : `<strong>Soubor se nafoukl o ${Math.abs(sv)} %.</strong> Bez opakujících se znaků RLE jen přidává čísla navíc — proto se v praxi kombinuje s dalšími metodami.`;
+  }
+  ta.oninput=calc;
+  $$(h,'[data-s]').forEach(b=>b.onclick=()=>{ta.value=b.dataset.s;calc();});
+  calc();
+};
+
+
+/* ══════════════════════════════════════════════════════
+   IKONY
+══════════════════════════════════════════════════════ */
+function hlIcon(t){
+  const i={
+    info:`<svg class="hl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    check:`<svg class="hl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    warn:`<svg class="hl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    key:`<svg class="hl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="5"/><line x1="12.22" y1="11.22" x2="22" y2="2"/><line x1="22" y1="2" x2="22" y2="7"/><line x1="18" y1="2" x2="18" y2="7"/></svg>`
+  };
+  return i[t]||i.info;
+}
+
+/* ══════════════════════════════════════════════════════
+   LEKCE — z obsahu kapitol + závěrečný kvíz
+══════════════════════════════════════════════════════ */
+const BADGES=[
+  ['b-data','Data'],['b-arch','Architektura'],['b-hw','Hardware'],['b-bus','Rozhraní'],
+  ['b-mem','Paměti'],['b-per','Periferie'],['b-mob','Mobilní'],['b-os','Systémy'],
+  ['b-wl','Prezentování'],['b-sec','Bezpečnost']
+];
+const SHORT=['Data','Architektura','Části PC','Rozhraní','Paměti','Periferie','Mobilní','Systémy','Prezentování','Bezpečnost'];
+
+const LESSONS=CHAPTERS.map((ch,i)=>({
+  kind:'chapter', ch,
+  badge:BADGES[i][0], bTxt:BADGES[i][1],
+  title:ch.title, sub:ch.sub, short:SHORT[i]
+}));
+LESSONS.push({kind:'quiz',badge:'b-quiz',bTxt:'Závěrečný test',
+  title:'Ověřte si znalosti',sub:'15 otázek napříč všemi kapitolami',short:'Test'});
+
+/* ══════════════════════════════════════════════════════
+   STAV
+══════════════════════════════════════════════════════ */
+let curL=0;
+const done=new Set();
+let qResults=[],qOrder=[],qShuffledOpts=[],qI=0,qDone=false,bestScore=null;
+
+const LS_KEY='apos_kurz_v3';
+function saveState(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify({curL,done:[...done],qResults,qOrder,bestScore}));}catch(e){}
+}
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY); if(!raw) return false;
+    const s=JSON.parse(raw);
+    curL=Math.min(s.curL||0,LESSONS.length-1);
+    (s.done||[]).forEach(i=>done.add(i));
+    qResults=s.qResults||[]; qOrder=s.qOrder||[];
+    bestScore=(s.bestScore===undefined?null:s.bestScore);
+    return true;
+  }catch(e){return false;}
+}
+function clearState(){try{localStorage.removeItem(LS_KEY);}catch(e){}}
+
+function updateProg(){
+  const pct=Math.round(done.size/LESSONS.length*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progPct').textContent=pct+' %';
+  document.getElementById('stepsNav').innerHTML=LESSONS.map((l,i)=>{
+    const isDone=done.has(i),isActive=i===curL;
+    const isLocked=i>0&&!done.has(i-1)&&!isDone&&!isActive;
+    const lbl=(isDone?'✓ ':'')+(i<LESSONS.length-1?(i+1)+'. ':'')+l.short;
+    return `<button class="sb${isDone?' done':''}${isActive?' active':''}" ${isLocked?'disabled title="Nejdřív dokončete předchozí kapitolu"':''} onclick="goL(${i})">${lbl}</button>`;
+  }).join('');
+}
+
+function goL(i){
+  if(i>0&&!done.has(i-1)&&!done.has(i)&&i!==curL) return;
+  curL=i; saveState(); render(); updateProg();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function completeNext(){
+  done.add(curL); saveState();
+  if(curL<LESSONS.length-1){curL++;render();}
+  else{renderComplete();}
+  updateProg(); saveState();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════════════════
+   VYKRESLENÍ LEKCE
+══════════════════════════════════════════════════════ */
+function render(){
+  const l=LESSONS[curL], isLast=curL===LESSONS.length-1;
+  const body = l.kind==='quiz' ? `<div id="qBox"></div>` : chapterBody(l.ch);
+  const meta = l.kind==='quiz'
+    ? `<span>◷ asi 10 minut</span><span>✓ 15 otázek</span>${bestScore!==null?`<span>★ nejlépe ${bestScore} %</span>`:''}`
+    : `<span>◷ asi ${l.ch.mins} minut</span><span>▤ ${l.ch.sections.length} částí</span><span>△ ${(l.ch.tasks||[]).length} úlohy</span>`;
+
+  document.getElementById('lessonCard').innerHTML=
+    `<div class="lhead">
+       <div class="lbadge ${l.badge}"><div class="dot"></div>${l.bTxt}</div>
+       <div class="ltitle">${l.title}</div>
+       <div class="lsub">${l.sub}</div>
+       <div class="lmeta">${meta}</div>
+     </div>
+     <div class="lbody">${body}</div>
+     <div class="lnav">
+       <button class="btn btn-g" ${curL===0?'disabled':''} onclick="goL(${curL-1})">← Zpět</button>
+       <span class="lnav-pos">${curL+1} / ${LESSONS.length}</span>
+       <button class="btn btn-p" onclick="completeNext()">${isLast?'Dokončit ✓':'Další kapitola →'}</button>
+     </div>`;
+  setTimeout(()=>postRender(l),40);
+}
+
+function chapterBody(ch){
+  let h='';
+  ch.sections.forEach((s,i)=>{
+    h+=`<div class="sechead"><span class="n">${String(i+1).padStart(2,'0')}</span><h3>${s.t}</h3></div>`;
+    h+=`<div class="txt">${s.html}</div>`;
+    if(s.facts){
+      h+=`<table class="info-table"><thead><tr><th colspan="2">${s.facts.title}</th></tr></thead><tbody>`
+       + s.facts.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')
+       + `</tbody></table>`;
+    }
+    if(s.lab){
+      h+=`<div class="sim">
+            <div class="sim-t">${s.labTitle||'Vyzkoušejte si'}</div>
+            ${s.labHint?`<div class="sim-h">${s.labHint}</div>`:''}
+            <div class="lab" data-lab="${s.lab}"></div>
+          </div>`;
+    }
+    if(s.key){
+      h+=`<div class="hl ${s.keyWarn?'hl-amber':'hl-green'}">${hlIcon(s.keyWarn?'warn':'key')}<div>${s.key}</div></div>`;
+    }
+  });
+
+  h+=`<div class="sechead"><span class="n">Σ</span><h3>Co si odnést</h3></div>
+      <ul class="recap-list">${ch.recap.map(r=>`<li><div>${r}</div></li>`).join('')}</ul>`;
+
+  if(ch.tasks&&ch.tasks.length){
+    h+=`<div class="sechead"><span class="n">△</span><h3>Úlohy k promyšlení</h3></div>
+        <div class="txt"><p>Typ úloh, jaké čekají u zkoušky. Zkuste si odpověď nejdřív zformulovat sami, teprve pak si ji porovnejte s návrhem řešení.</p></div>`
+     + ch.tasks.map((t,i)=>`<div class="task">
+          <div class="task-q"><b>${i+1}.</b> ${t.q}</div>
+          <button class="btn btn-g btn-s" onclick="toggleSol(this)">Zobrazit návrh řešení</button>
+          <div class="task-sol" style="display:none">${t.s}</div>
+        </div>`).join('');
+  }
+  return h;
+}
+
+function toggleSol(btn){
+  const sol=btn.parentElement.querySelector('.task-sol');
+  const open=sol.style.display!=='none';
+  sol.style.display=open?'none':'block';
+  btn.textContent=open?'Zobrazit návrh řešení':'Skrýt řešení';
+}
+
+/* ── kontrolní otázky uvnitř kapitoly ── */
+function renderChapterQ(ch){
+  const host=document.querySelector('.chq'); if(!host) return;
+  host.innerHTML='';
+  ch.questions.forEach((item,i)=>{
+    const box=document.createElement('div');
+    box.style.marginBottom='1.25rem';
+    box.innerHTML=`<div class="q-text" style="font-size:14px">${i+1}. ${item.q}</div>`;
+    const exp=document.createElement('div'); exp.className='q-exp'; exp.style.display='none';
+    if(item.t==='choice'){
+      const wrap=document.createElement('div'); wrap.className='q-opts';
+      item.o.forEach((o,oi)=>{
+        const b=document.createElement('button'); b.className='q-opt'; b.type='button'; b.textContent=o;
+        b.onclick=()=>{
+          if(b.disabled) return;
+          if(oi===item.c){
+            wrap.querySelectorAll('.q-opt').forEach(x=>x.disabled=true);
+            b.classList.add('correct');
+            exp.style.display='block'; exp.innerHTML='<strong>Správně. </strong>'+item.e;
+          } else {
+            b.disabled=true; b.classList.add('wrong');
+            exp.style.display='block'; exp.innerHTML='<strong>Tahle možnost to není. </strong>Zkuste jinou.';
+          }
+        };
+        wrap.appendChild(b);
+      });
+      box.appendChild(wrap);
+    } else {
+      const row=document.createElement('div'); row.className='q-txt-in';
+      const inp=document.createElement('input'); inp.type='text'; inp.placeholder='Vaše odpověď';
+      const b=document.createElement('button'); b.className='btn btn-p'; b.textContent='Zkontrolovat';
+      const chk=()=>{
+        if(inp.disabled||!inp.value.trim()) return;
+        if(item.a.some(a=>norm(a)===norm(inp.value))){
+          inp.disabled=true; b.disabled=true;
+          inp.style.borderColor='var(--green-m)'; inp.style.background='var(--green-bg)';
+          exp.style.display='block'; exp.innerHTML='<strong>Správně. </strong>'+item.e;
+        } else {
+          inp.style.borderColor='var(--red-m)';
+          exp.style.display='block'; exp.innerHTML='<strong>Ještě ne. </strong>Zkuste to jinak.';
+        }
+      };
+      b.onclick=chk;
+      inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();chk();}};
+      row.appendChild(inp); row.appendChild(b); box.appendChild(row);
+    }
+    box.appendChild(exp);
+    host.appendChild(box);
+  });
+}
+function norm(s){return String(s).toLowerCase().trim().replace(/\s+/g,'').replace(/,/g,'.').replace(/^0+(?=\d)/,'');}
+
+/* ══════════════════════════════════════════════════════
+   ZÁVĚREČNÝ TEST
+══════════════════════════════════════════════════════ */
+const QS=[];
+CHAPTERS.forEach((ch,ci)=>ch.questions.forEach(q=>QS.push({...q,chn:ci+1,cht:ch.title})));
+const QN=15;
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function initQuizOrder(){
+  qOrder=shuffle(QS.map((_,i)=>i)).slice(0,QN);
+  qShuffledOpts=qOrder.map(qi=>{
+    const q=QS[qi];
+    return q.t==='choice'?shuffle(q.o.map((_,i)=>i)):null;
+  });
+  saveState();
+}
+function curQ(){return QS[qOrder[qI]];}
+
+function postRenderQuiz(){
+  qI=0;qDone=false;qResults=[];
+  initQuizOrder();
+  renderQ();
+}
+
+function renderQ(){
+  const box=document.getElementById('qBox'); if(!box) return;
+  if(qI>=qOrder.length){renderQuizResults(box);return;}
+  const q=curQ(), pct=Math.round(qI/qOrder.length*100);
+  let inner;
+  if(q.t==='choice'){
+    const idxs=qShuffledOpts[qI];
+    inner=`<div class="q-opts">${idxs.map((oi,pos)=>
+      `<button class="q-opt" id="qo${pos}" onclick="qAns(${pos})">${q.o[oi]}</button>`).join('')}</div>`;
+  } else {
+    inner=`<div class="q-txt-in">
+      <input type="text" id="qTxt" placeholder="Vaše odpověď" onkeydown="if(event.key==='Enter'){event.preventDefault();qAnsTxt();}">
+      <button class="btn btn-p" id="qTxtBtn" onclick="qAnsTxt()">Odpovědět</button></div>`;
+  }
+  box.innerHTML=`
+    <div class="q-prog-wrap"><div class="q-prog" style="width:${pct}%"></div></div>
+    <div class="q-meta"><span>Otázka ${qI+1} z ${qOrder.length}</span><span class="ch">kapitola ${q.chn} — ${q.cht}</span></div>
+    <div class="q-text">${q.q}</div>
+    ${inner}
+    <div id="qExp" class="q-exp" style="display:none"></div>
+    <button id="qNxt" class="btn btn-p" style="display:none" onclick="qI++;qDone=false;renderQ()">${qI+1>=qOrder.length?'Zobrazit výsledek →':'Další otázka →'}</button>`;
+  if(q.t==='text') setTimeout(()=>{const e=document.getElementById('qTxt');if(e)e.focus();},60);
+}
+
+function finishQ(isRight,extra){
+  qResults.push(isRight);
+  const q=curQ();
+  const e=document.getElementById('qExp');
+  e.style.display='block';
+  e.innerHTML=(isRight?'<strong>Správně. </strong>':'<strong>Chyba. </strong>')+(extra||'')+q.e;
+  document.getElementById('qNxt').style.display='inline-block';
+  saveState();
+}
+function qAns(pos){
+  if(qDone) return; qDone=true;
+  const q=curQ(), idxs=qShuffledOpts[qI];
+  const correctPos=idxs.indexOf(q.c);
+  idxs.forEach((_,p)=>{
+    const b=document.getElementById('qo'+p); b.disabled=true;
+    if(p===correctPos) b.classList.add('correct');
+    else if(p===pos) b.classList.add('wrong');
+  });
+  finishQ(pos===correctPos);
+}
+function qAnsTxt(){
+  if(qDone) return;
+  const inp=document.getElementById('qTxt');
+  if(!inp.value.trim()) return;
+  qDone=true;
+  const q=curQ();
+  const ok=q.a.some(a=>norm(a)===norm(inp.value));
+  inp.disabled=true; document.getElementById('qTxtBtn').disabled=true;
+  inp.style.borderColor=ok?'var(--green-m)':'var(--red-m)';
+  inp.style.background=ok?'var(--green-bg)':'var(--red-bg)';
+  finishQ(ok,ok?'':'Správná odpověď je <b>'+q.a[0]+'</b>. ');
+}
+
+function renderQuizResults(box){
+  const sc=qResults.filter(r=>r).length;
+  const pct=Math.round(sc/qOrder.length*100);
+  if(bestScore===null||pct>bestScore){bestScore=pct;}
+  saveState();
+  const wrong=qResults.map((r,i)=>r?null:qOrder[i]).filter(x=>x!==null);
+  const grade = pct===100?'Perfektní skóre. Na zkoušku jste připravení.'
+    : pct>=80?'Výborně. Zbývají jen drobné mezery.'
+    : pct>=60?'Dobrý základ — projděte si chybné odpovědi níže.'
+    : pct>=40?'Základ držíte, ale vraťte se ke studijním textům u témat, která drhla.'
+    : 'Na opakování je ještě brzy. Začněte studijními texty v Moodlu a vraťte se sem potom.';
+
+  const wrongHTML = wrong.length===0 ? '' : `
+    <div style="text-align:left;margin-top:1.25rem">
+      <div class="slabel">Chybné odpovědi — správná řešení</div>
+      ${wrong.map(qi=>{
+        const q=QS[qi];
+        const right=q.t==='choice'?q.o[q.c]:q.a[0];
+        return `<div style="background:var(--red-bg);border:1px solid var(--red-b);border-radius:var(--r);padding:.75rem 1rem;margin-bottom:.5rem">
+          <div style="font-size:13px;font-weight:600;color:var(--red-t);margin-bottom:4px">${q.q}</div>
+          <div style="font-size:12px;color:var(--green-m);margin-bottom:4px">✓ ${right}</div>
+          <div style="font-size:12px;color:var(--sec);line-height:1.55">${q.e}</div>
+          <div style="font-size:11px;color:var(--hint);margin-top:5px">Kapitola ${q.chn} — ${q.cht}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  box.innerHTML=`<div class="complete">
+    <div class="complete-star">★</div>
+    <div class="complete-score">${sc} / ${qOrder.length}</div>
+    <div style="display:flex;gap:4px;justify-content:center;margin-bottom:.75rem;flex-wrap:wrap">
+      ${qResults.map((r,i)=>`<span class="qdot ${r?'ok':'bad'}" title="${QS[qOrder[i]].q.replace(/"/g,'')}"></span>`).join('')}
+    </div>
+    <div class="complete-sub">${grade}${bestScore!==null?`<br><span style="font-size:12px;color:var(--hint)">Nejlepší výsledek: ${bestScore} %</span>`:''}</div>
+    <button class="btn btn-p" onclick="postRenderQuiz()">Zkusit znovu s jinými otázkami</button>
+    ${wrongHTML}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   DOKONČENÍ
+══════════════════════════════════════════════════════ */
+function renderComplete(){
+  const sc=qResults.filter(r=>r).length;
+  document.getElementById('lessonCard').innerHTML=`
+    <div class="lbody"><div class="complete">
+      <div class="complete-star">★</div>
+      <div class="complete-title">Opakování dokončeno</div>
+      ${qResults.length?`<div class="complete-score">${sc} / ${qResults.length} v testu</div>`:''}
+      <div class="complete-sub">Prošli jste všech deset kapitol — od reprezentace dat a architektury přes paměti, periferie a operační systémy až po bezpečnost a komprimaci. Pokud vám něco pořád není jasné, vraťte se ke studijním textům v Moodlu.</div>
+      <div class="brow" style="justify-content:center">
+        <button class="btn btn-g" onclick="goL(0)">Projít znovu od začátku</button>
+        <button class="btn btn-p" onclick="goL(LESSONS.length-1)">Zkusit test znovu</button>
+      </div>
+    </div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   TOAST + RESET
+══════════════════════════════════════════════════════ */
+function showToast(msg,ms=2800){
+  const t=document.getElementById('toast'); if(!t) return;
+  t.textContent=msg; t.style.display='block'; t.style.opacity='1';
+  clearTimeout(t._to);
+  t._to=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>{t.style.display='none';},300);},ms);
+}
+function confirmReset(){
+  if(done.size===0&&curL===0){showToast('Žádný postup k resetování.');return;}
+  if(confirm('Opravdu resetovat celý postup? Tuto akci nelze vrátit zpět.')){
+    curL=0;done.clear();qResults=[];qOrder=[];qI=0;bestScore=null;
+    clearState();render();updateProg();
+    window.scrollTo({top:0,behavior:'smooth'});
+    showToast('Postup byl resetován.');
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   PO VYKRESLENÍ
+══════════════════════════════════════════════════════ */
+function postRender(l){
+  if(l.kind==='quiz'){postRenderQuiz();return;}
+  document.querySelectorAll('.lab[data-lab]').forEach(el=>{
+    const w=WIDGETS[el.dataset.lab];
+    if(w) w(el);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   START
+══════════════════════════════════════════════════════ */
+loadState();
+updateProg();
+render();
+if(done.size>0) showToast('Vítejte zpět. Postup obnoven ('+done.size+'/'+LESSONS.length+').');
+</script>
+</body>
+</html>
